@@ -229,6 +229,11 @@ public:
 };
 
 
+// not compiling yet
+// template<typename T> NdarraySlice : Ndarray<T>{
+// }
+
+
 std::ostream& operator<< (std::ostream& stream, std::vector<size_t>shape ) {
 	stream << '(';
 	for (int i = 0; i < shape.size() ; i++){
