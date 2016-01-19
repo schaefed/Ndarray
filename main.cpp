@@ -27,7 +27,7 @@ int main(){
 	std::vector<size_t> shape = {16,16};
 	std::vector<int> base = range(0,16*16);
 	
-	Ndarray<int>array(&base[0],shape,1);
+	Ndarray<int>array(base,shape,1);
 
 	return 0;
 }
