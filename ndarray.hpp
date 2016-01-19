@@ -143,8 +143,9 @@ private:
 	}
   
 public:
-	
-	size_t *shape;
+
+	std::vector<size_t> shape;
+	// size_t *shape;
 	size_t  ndim;
 	SharedPointer<T> data;
 
@@ -155,16 +156,23 @@ public:
 	Ndarray(std::vector<size_t> shape_)
 	{
 		ndim = shape_.size();		
-		shape = new size_t[ndim];
-		std::copy(shape_.begin(), shape_.end(), shape);		
+		shape = shape_;
 		data = SharedPointer<T>(new T[size()]);
 	}
+
+	// /* Wrap pointer to existing data */
+	// Ndarray(std::vector<T> &data_){
+	// 	ndim = 1;
+	// 	shape = {data_.size()};
+	// 	// shape = new size_t[ndim] {data_.size()};
+	// 	data = SharedPointer<T>(&data_[0]);
+	// }
+
 
 	/* Wrap pointer to existing data */
 	Ndarray(std::vector<T> &data_, std::vector<size_t> shape_){
 		ndim = shape_.size();
-		shape = new size_t[ndim];
-		std::copy(shape_.begin(), shape_.end(), shape);
+		shape = shape_;
 		data = SharedPointer<T>(&data_[0]);
 	}
 
@@ -172,8 +180,7 @@ public:
 	/* Wrap pointer to existing data */
 	Ndarray(std::vector<T> &data_, std::vector<size_t> shape_, size_t refcount_){
 		ndim = shape_.size();
-		shape = new size_t[ndim];
-		std::copy(shape_.begin(), shape_.end(), shape);
+		shape = shape_;
 		data = SharedPointer<T>(&data_[0], refcount_);
 	}
 
@@ -181,21 +188,23 @@ public:
 	/* Wrap pointer to existing data */
 	Ndarray(T* data_, std::vector<size_t> shape_){
 		ndim = shape_.size();
-		shape = new size_t[ndim];
-		std::copy(shape_.begin(), shape_.end(), shape);
+		shape = shape_;
 		data = SharedPointer<T>(data_);
 	}
 
 	/* Wrap pointer to existing data, with given refcount */
 	Ndarray(T* data_, std::vector<size_t> shape_, size_t refcount_) {
 		ndim = shape_.size();
-		shape = new size_t[ndim];
-		std::copy(shape_.begin(), shape_.end(), shape);
+		shape = shape_;
+		// shape = new size_t[ndim];
+		// std::copy(shape_.begin(), shape_.end(), shape);
 		data = SharedPointer<T>(data_,refcount_);
 	}
 
-	Ndarray(SharedPointer<T> data_, size_t* shape_, size_t ndim_) :
-		data(data_), shape(shape_), ndim(ndim_){
+	Ndarray(SharedPointer<T> data_, std::vector<size_t> shape_, size_t ndim_) {
+		ndim = ndim_;
+		shape = shape_;
+		data = data_;
 	}
 
 
@@ -237,7 +246,9 @@ public:
 		// cout << "OUT: operator[](int idx)\n";
 				
 		// return out;
-		return SliceProxy(Ndarray<T>(data+start,shape+1,ndim-1));
+		std::vector<size_t> newshape (&shape[1],&shape[ndim]);
+		return SliceProxy(Ndarray<T>(data+start,newshape,ndim-1));
+		// return SliceProxy(Ndarray<T>(data+start,shape+1,ndim-1));
 	}
 
 	const SliceProxy operator[](int idx) const{
