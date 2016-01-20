@@ -40,6 +40,6 @@ int main(){
 	
 	Ndarray<int>array(basevec,shape,1);
 	testEqual(array,basevec);
-	
+
 	return 0;
 }
