@@ -2,6 +2,8 @@
 #include <vector>
 #include <numeric>
 #include <iostream>
+#include <stdexcept>
+
 #include "ndarray.hpp"
 
 template<typename T>
@@ -43,6 +45,19 @@ void testAssignment(Ndarray<T> array){
 	}
 }
 
+template<typename T>
+void testOutOfBounds(Ndarray<T> &array){
+	try{
+		array[-1];
+		assert(false); // exception not thrown
+	} catch(range_error){}
+
+	try{
+		array[array.shape[0]];
+		assert(false); // exception not thrown
+	} catch(range_error){}
+}
+
 int main(){
 
 	std::vector<size_t> shape = {16,16};
@@ -51,6 +66,6 @@ int main(){
 	Ndarray<int>array(basevec,shape,1);
 	testEqual(array,basevec);
 	testAssignment(array);
-	
+	testOutOfBounds(array);
 	return 0;
 }
