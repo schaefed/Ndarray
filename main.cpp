@@ -51,7 +51,6 @@ int main(){
 	Ndarray<int>array(basevec,shape,1);
 	testEqual(array,basevec);
 	testAssignment(array);
-	// std::cout << array[3][3] << std::endl;
 	
 	return 0;
 }

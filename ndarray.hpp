@@ -25,53 +25,45 @@ public:
 	Ndarray(): shape(nullptr), ndim(0), data(nullptr) {}
 	
 
-	/* Create an empty Ndarray */
-	Ndarray(std::vector<size_t> shape_)
-	{
+	Ndarray(vector<size_t> shape_){
 		ndim = shape_.size();		
 		shape = shape_;
 		data = SharedPointer<T>(new T[size()]);
 	}
 
-	/* Wrap pointer to existing data */
-	Ndarray(std::vector<T> &data_){
+	Ndarray(vector<T> &data_){
 		ndim = 1;
 		shape = {data_.size()};
 		data = SharedPointer<T>(&data_[0]);
 	}
 
-
-	/* Wrap pointer to existing data */
-	Ndarray(std::vector<T> &data_, std::vector<size_t> shape_){
+	Ndarray(vector<T> &data_, vector<size_t> shape_){
 		ndim = shape_.size();
 		shape = shape_;
 		data = SharedPointer<T>(&data_[0]);
 	}
 
 
-	/* Wrap pointer to existing data */
-	Ndarray(std::vector<T> &data_, std::vector<size_t> shape_, size_t refcount_){
+	Ndarray(vector<T> &data_, vector<size_t> shape_, size_t refcount_){
 		ndim = shape_.size();
 		shape = shape_;
 		data = SharedPointer<T>(&data_[0], refcount_);
 	}
 
 	
-	/* Wrap pointer to existing data */
-	Ndarray(T* data_, std::vector<size_t> shape_){
+	Ndarray(T* data_, vector<size_t> shape_){
 		ndim = shape_.size();
 		shape = shape_;
 		data = SharedPointer<T>(data_);
 	}
 
-	/* Wrap pointer to existing data, with given refcount */
-	Ndarray(T* data_, std::vector<size_t> shape_, size_t refcount_) {
+	Ndarray(T* data_, vector<size_t> shape_, size_t refcount_) {
 		ndim = shape_.size();
 		shape = shape_;
 		data = SharedPointer<T>(data_,refcount_);
 	}
 
-	Ndarray(SharedPointer<T> data_, std::vector<size_t> shape_, size_t ndim_):
+	Ndarray(SharedPointer<T> data_, vector<size_t> shape_, size_t ndim_):
 		ndim(ndim_), shape(shape_), data(data_) {}
 
 
@@ -99,36 +91,11 @@ public:
 
 	friend void swap(Ndarray<T>& first, Ndarray<T>& second) 
 	{
-		
-		// enable ADL (not necessary in our case, but good practice)
-		using std::swap;
-		
 		swap(first.shape, second.shape);
 		swap(first.ndim, second.ndim);
 		swap(first.data, second.data);		
 	}
 
-	
-	// SliceProxy operator[](int idx){
-	// 	// cout << "IN: operator[](int idx)\n";
-	// 	checkIndex(idx);
-	// 	int start = idx;
-	// 	if (ndim - 1 > 0){
-	// 		start *= shape[1];
-	// 	}
-	// 	// SliceProxy out(Ndarray<T>(data+start,shape+1,ndim-1));
-	// 	// cout << "OUT: operator[](int idx)\n";
-				
-	// 	// return out;
-	// 	std::vector<size_t> newshape (&shape[1],&shape[ndim]);
-	// 	return SliceProxy(Ndarray<T>(data+start,newshape,ndim-1));
-	// 	// return SliceProxy(Ndarray<T>(data+start,shape+1,ndim-1));
-	// }
-
-	// const SliceProxy operator[](int idx) const{
-	// 	return operator[](idx);
-	// }
-	
 
 	operator T(){
 		if (ndim > 0){
@@ -144,7 +111,7 @@ public:
 			start *= shape[1];
 		}
 
-		std::vector<size_t> newshape (&shape[1],&shape[ndim]);
+		vector<size_t> newshape (&shape[1],&shape[ndim]);
 		return Ndarray<T>(data+start,newshape,ndim-1);
 		// return SliceProxy(Ndarray<T>(data+start,shape+1,ndim-1));
 	}
@@ -167,12 +134,7 @@ public:
 };
 
 
-// not compiling yet
-// template<typename T> NdarraySlice : Ndarray<T>{
-// }
-
-
-std::ostream& operator<< (std::ostream& stream, std::vector<size_t>shape ) {
+ostream& operator<< (ostream& stream, vector<size_t>shape ) {
 	stream << '(';
 	for (int i = 0; i < shape.size() ; i++){
 		stream << shape[i];
