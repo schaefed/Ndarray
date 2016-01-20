@@ -22,14 +22,11 @@ public:
 	int64_t stop;
 	int64_t step;
 
-	Slice(int64_t start_):
-		start(start_), stop(1), step(1), stop_given(false) {}
+	Slice(int64_t start_, int64_t step_=1):
+		start(start_), stop(1), step(step_), stop_given(false) {}
 
-	Slice(int64_t start_, int64_t stop_ ):
-		start(start_), stop(stop_), step(1), stop_given(true) {}
-
-	Slice(int64_t start_, int64_t stop_, int64_t step_):
-		start(start_), stop(stop_), step(step_), stop_given(true){}
+	Slice(int64_t start_, int64_t stop_, int64_t step=1 ):
+		start(start_), stop(stop_), step(step), stop_given(true) {}
 
 	void update(size_t length){
 		if (not stop_given){
@@ -50,61 +47,43 @@ public:
 
 	Ndarray(): shape(nullptr), ndim(0), data(nullptr) {}
 
-	Ndarray(vector<size_t> shape_){
-		ndim = shape_.size();		
-		shape = shape_;
+	Ndarray(vector<size_t> shape_, size_t refcount=0):
+		ndim(shape_.size()),
+		shape(shape_),
+		data(SharedPointer<T>(new T[size()], refcount)){
 		stride = vector<size_t>(ndim,1);
-		data = SharedPointer<T>(new T[size()]);
 	}
 
-	Ndarray(vector<T> &data_){
-		ndim = 1;
-		shape = {data_.size()};
-		stride = vector<size_t>(ndim,1);
-		data = SharedPointer<T>(&data_[0]);
-	}
+	Ndarray(vector<T> &data_, size_t refcount=1):
+		ndim(1),
+		shape(data_.size()),
+		stride(vector<size_t>(1, 1)),
+		data(SharedPointer<T>(&data_[0], refcount)){}
 
-	Ndarray(vector<T> &data_, vector<size_t> shape_){
-		ndim = shape_.size();
-		shape = shape_;
-		stride = vector<size_t>(ndim,1);
-		data = SharedPointer<T>(&data_[0]);
-	}
-
-	Ndarray(vector<T> &data_, vector<size_t> shape_, size_t refcount_){
-		ndim = shape_.size();
-		shape = shape_;
-		stride = vector<size_t>(ndim,1);
-		data = SharedPointer<T>(&data_[0], refcount_);
+	Ndarray(vector<T> &data_, vector<size_t> shape_, size_t refcount=1):
+		ndim(shape_.size()),
+		shape(shape_),
+	 	data(SharedPointer<T>(&data_[0], refcount)) {
+	 	stride = vector<size_t>(ndim, 1);
 	}
 	
-	Ndarray(T* data_, vector<size_t> shape_){
-		ndim = shape_.size();
-		shape = shape_;
-		stride = vector<size_t>(ndim,1);
-		data = SharedPointer<T>(data_);
-	}
-
-	Ndarray(T* data_, vector<size_t> shape_, size_t refcount_) {
-		ndim = shape_.size();
-		shape = shape_;
-		stride = vector<size_t>(ndim,1);
-		data = SharedPointer<T>(data_,refcount_);
-	}
+	Ndarray(T* data_, vector<size_t> shape_, size_t refcount=1):
+		ndim(shape_.size()), shape(shape_),
+		data(SharedPointer<T>(data_, refcount)) {
+	 	stride = vector<size_t>(ndim, 1);
+		}
 
 	Ndarray(SharedPointer<T> data_, vector<size_t> shape_):
-		data(data_), shape(shape_), ndim(shape_.size()) {
+		ndim(shape_.size()), shape(shape_), data(data_) {
 		stride = vector<size_t>(ndim,1);
 	}
 
 	Ndarray(SharedPointer<T> data_, vector<size_t> shape_, vector<size_t> stride_):
-		data(data_), shape(shape_), ndim(shape_.size()), stride(stride_) {}
+		ndim(shape_.size()), shape(shape_), stride(stride_), data(data_) {}
 	
 
 	Ndarray(const Ndarray<T>& other):
-		shape(other.shape),ndim(other.ndim),data(other.data){
-		stride = vector<size_t>(ndim,1);
-	}
+		ndim(other.ndim), shape(other.shape), stride(other.stride), data(other.data){}
 
 
 	Ndarray operator=(Ndarray<T> that){
