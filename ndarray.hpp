@@ -15,55 +15,7 @@ using namespace std;
 
 template<typename T>
 class Ndarray {
-private:
-	class SliceProxy{
-		/*
-		  If this class would be implemented as a child of
-		  Ndarray<T>, it would be poosible to acces all 
-		  member functions and things like 
-		  cout << array[0].shape should work.
-		*/
-	private:
-		Ndarray<T> owner;  
-	public:
-		SliceProxy(Ndarray<T> owner_ ) : owner( owner_ ) {}
-
-		operator Ndarray<T>(){
-			return owner;
-		}
-    
-		operator T(){
-			if (owner.ndim > 0){
-				throw range_error("Cannot Convert Ndarray to scalar!");
-			}
-			return owner.data.get()[0];
-		}
-		
-		SliceProxy operator[](int idx){
-			return owner[idx];
-		}
-
-		// check for different semantics
-		void operator=(const T& other){
-			if (owner.ndim > 1){
-				throw range_error("Assigning to a Ndarray is not supported yet!");
-			}
-			owner.data.get()[0] = other;
-		}
-		
-	};
-
-	size_t size(){
-		if (ndim > 0){
-			size_t out = 1;
-			for (int i=0; i<ndim; i++){
-				out *= shape[i];
-			}
-			return out;
-		}
-		return 0;
-	}
-  
+ 
 public:
 
 	std::vector<size_t> shape;
@@ -138,6 +90,13 @@ public:
 		return *this;
 	}
 
+	void operator=(const T& other){
+		if (ndim > 1){
+			throw range_error("Assigning to a Ndarray is not supported yet!");
+		}
+		data.get()[0] = other;
+	}
+
 	friend void swap(Ndarray<T>& first, Ndarray<T>& second) 
 	{
 		
@@ -150,26 +109,61 @@ public:
 	}
 
 	
-	SliceProxy operator[](int idx){
-		// cout << "IN: operator[](int idx)\n";
+	// SliceProxy operator[](int idx){
+	// 	// cout << "IN: operator[](int idx)\n";
+	// 	checkIndex(idx);
+	// 	int start = idx;
+	// 	if (ndim - 1 > 0){
+	// 		start *= shape[1];
+	// 	}
+	// 	// SliceProxy out(Ndarray<T>(data+start,shape+1,ndim-1));
+	// 	// cout << "OUT: operator[](int idx)\n";
+				
+	// 	// return out;
+	// 	std::vector<size_t> newshape (&shape[1],&shape[ndim]);
+	// 	return SliceProxy(Ndarray<T>(data+start,newshape,ndim-1));
+	// 	// return SliceProxy(Ndarray<T>(data+start,shape+1,ndim-1));
+	// }
+
+	// const SliceProxy operator[](int idx) const{
+	// 	return operator[](idx);
+	// }
+	
+
+	operator T(){
+		if (ndim > 0){
+			throw range_error("Cannot Convert Ndarray to scalar!");
+		}
+		return data.get()[0];
+	}
+	
+	Ndarray<T> operator[](int idx){
 		checkIndex(idx);
 		int start = idx;
 		if (ndim - 1 > 0){
 			start *= shape[1];
 		}
-		// SliceProxy out(Ndarray<T>(data+start,shape+1,ndim-1));
-		// cout << "OUT: operator[](int idx)\n";
-				
-		// return out;
+
 		std::vector<size_t> newshape (&shape[1],&shape[ndim]);
-		return SliceProxy(Ndarray<T>(data+start,newshape,ndim-1));
+		return Ndarray<T>(data+start,newshape,ndim-1);
 		// return SliceProxy(Ndarray<T>(data+start,shape+1,ndim-1));
 	}
 
-	const SliceProxy operator[](int idx) const{
+	const Ndarray<T> operator[](int idx) const{
 		return operator[](idx);
 	}
 
+	size_t size(){
+		if (ndim > 0){
+			size_t out = 1;
+			for (int i=0; i<ndim; i++){
+				out *= shape[i];
+			}
+			return out;
+		}
+		return 0;
+	}
+ 
 };
 
 
