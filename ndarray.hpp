@@ -127,18 +127,13 @@ public:
 		slc.update(shape[0]);
 
 		// TODO: implement some sort of check
-		// checkIndex(idx);
-		
 		int64_t start = slc.start * stride[0];
-		// if more than one dimension we are indexing Ndarrays
-		// if (ndim - 1 > 0){
-		// 	start *= shape[1] * stride[1];
-		// }
 
 		vector<size_t> newshape = shape;//(&shape[1],&shape[ndim]);
 		vector<size_t> newstride = stride;
 		newshape[0] = (slc.stop - slc.start) / slc.step;
 		newstride[0] = slc.step;
+
 		return Ndarray<T>(data+start, newshape, newstride);
 	}
 
@@ -172,11 +167,11 @@ public:
 		}
 		return 0;
 	}
- 
 };
 
 
-ostream& operator<< (ostream& stream, vector<size_t>shape ) {
+template<typename T>
+ostream& operator<< (ostream& stream, vector<T>shape ) {
 	stream << '(';
 	for (int i = 0; i < shape.size() ; i++){
 		stream << shape[i];
