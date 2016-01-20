@@ -33,6 +33,16 @@ void testEqual(Ndarray<T> &base, std::vector<T> &compare){
 	}
 }
 
+template<typename T>
+void testAssignment(Ndarray<T> array){
+	for (int i=0 ; i< array.shape[0] ; i++){
+		for (int j=0 ; j< array.shape[0] ; j++){
+			array[i][j] = 42;
+			assert(array[i][0] == 42); // Assignment failed
+		}
+	}
+}
+
 int main(){
 
 	std::vector<size_t> shape = {16,16};
@@ -40,6 +50,8 @@ int main(){
 	
 	Ndarray<int>array(basevec,shape,1);
 	testEqual(array,basevec);
-
+	testAssignment(array);
+	// std::cout << array[3][3] << std::endl;
+	
 	return 0;
 }
