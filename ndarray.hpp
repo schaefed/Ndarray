@@ -81,13 +81,12 @@ public:
 		data = SharedPointer<T>(new T[size()]);
 	}
 
-	// /* Wrap pointer to existing data */
-	// Ndarray(std::vector<T> &data_){
-	// 	ndim = 1;
-	// 	shape = {data_.size()};
-	// 	// shape = new size_t[ndim] {data_.size()};
-	// 	data = SharedPointer<T>(&data_[0]);
-	// }
+	/* Wrap pointer to existing data */
+	Ndarray(std::vector<T> &data_){
+		ndim = 1;
+		shape = {data_.size()};
+		data = SharedPointer<T>(&data_[0]);
+	}
 
 
 	/* Wrap pointer to existing data */
@@ -117,16 +116,11 @@ public:
 	Ndarray(T* data_, std::vector<size_t> shape_, size_t refcount_) {
 		ndim = shape_.size();
 		shape = shape_;
-		// shape = new size_t[ndim];
-		// std::copy(shape_.begin(), shape_.end(), shape);
 		data = SharedPointer<T>(data_,refcount_);
 	}
 
-	Ndarray(SharedPointer<T> data_, std::vector<size_t> shape_, size_t ndim_) {
-		ndim = ndim_;
-		shape = shape_;
-		data = data_;
-	}
+	Ndarray(SharedPointer<T> data_, std::vector<size_t> shape_, size_t ndim_):
+		ndim(ndim_), shape(shape_), data(data_) {}
 
 
 	Ndarray(const Ndarray<T>& other):
