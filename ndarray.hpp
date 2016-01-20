@@ -13,69 +13,99 @@
 
 using namespace std;
 
+class Slice {
+
+private:
+	bool stop_given;
+public:
+	int64_t start;
+	int64_t stop;
+	int64_t step;
+
+	Slice(int64_t start_):
+		start(start_), stop(1), step(1), stop_given(false) {}
+
+	Slice(int64_t start_, int64_t stop_ ):
+		start(start_), stop(stop_), step(1), stop_given(true) {}
+
+	Slice(int64_t start_, int64_t stop_, int64_t step_):
+		start(start_), stop(stop_), step(step_), stop_given(true){}
+
+	void update(size_t length){
+		if (not stop_given){
+			stop = length;
+		}
+	}
+};
+	
 template<typename T>
 class Ndarray {
  
 public:
 
 	std::vector<size_t> shape;
+	std::vector<size_t> stride;
 	size_t  ndim;
 	SharedPointer<T> data;
 
 	Ndarray(): shape(nullptr), ndim(0), data(nullptr) {}
-	
 
 	Ndarray(vector<size_t> shape_){
 		ndim = shape_.size();		
 		shape = shape_;
+		stride = vector<size_t>(ndim,1);
 		data = SharedPointer<T>(new T[size()]);
 	}
 
 	Ndarray(vector<T> &data_){
 		ndim = 1;
 		shape = {data_.size()};
+		stride = vector<size_t>(ndim,1);
 		data = SharedPointer<T>(&data_[0]);
 	}
 
 	Ndarray(vector<T> &data_, vector<size_t> shape_){
 		ndim = shape_.size();
 		shape = shape_;
+		stride = vector<size_t>(ndim,1);
 		data = SharedPointer<T>(&data_[0]);
 	}
-
 
 	Ndarray(vector<T> &data_, vector<size_t> shape_, size_t refcount_){
 		ndim = shape_.size();
 		shape = shape_;
+		stride = vector<size_t>(ndim,1);
 		data = SharedPointer<T>(&data_[0], refcount_);
 	}
-
 	
 	Ndarray(T* data_, vector<size_t> shape_){
 		ndim = shape_.size();
 		shape = shape_;
+		stride = vector<size_t>(ndim,1);
 		data = SharedPointer<T>(data_);
 	}
 
 	Ndarray(T* data_, vector<size_t> shape_, size_t refcount_) {
 		ndim = shape_.size();
 		shape = shape_;
+		stride = vector<size_t>(ndim,1);
 		data = SharedPointer<T>(data_,refcount_);
 	}
 
-	Ndarray(SharedPointer<T> data_, vector<size_t> shape_, size_t ndim_):
-		ndim(ndim_), shape(shape_), data(data_) {}
+	Ndarray(SharedPointer<T> data_, vector<size_t> shape_):
+		data(data_), shape(shape_), ndim(shape_.size()) {
+		stride = vector<size_t>(ndim,1);
+	}
 
+	Ndarray(SharedPointer<T> data_, vector<size_t> shape_, vector<size_t> stride_):
+		data(data_), shape(shape_), ndim(shape_.size()), stride(stride_) {}
+	
 
 	Ndarray(const Ndarray<T>& other):
 		shape(other.shape),ndim(other.ndim),data(other.data){
+		stride = vector<size_t>(ndim,1);
 	}
-	
-	void checkIndex(int idx){
-		if (ndim < 0){
-			throw range_error("Too many indices!");
-		}
-	}
+
 
 	Ndarray operator=(Ndarray<T> that){
 		swap(*this, that);
@@ -89,13 +119,11 @@ public:
 		data.get()[0] = other;
 	}
 
-	friend void swap(Ndarray<T>& first, Ndarray<T>& second) 
-	{
+	friend void swap(Ndarray<T>& first, Ndarray<T>& second){
 		swap(first.shape, second.shape);
 		swap(first.ndim, second.ndim);
 		swap(first.data, second.data);		
 	}
-
 
 	operator T(){
 		if (ndim > 0){
@@ -104,19 +132,54 @@ public:
 		return data.get()[0];
 	}
 	
-	Ndarray<T> operator[](int idx){
+	void checkIndex(int64_t idx){
+		if (ndim < 0){
+			throw range_error("Too many indices!");
+		}
+		if (idx < 0) {
+			throw range_error("Negative indices not supported!");
+		}
+		if (idx >= shape[0]) {
+			throw range_error("Index out of bounds");
+		}
+	}
+
+	Ndarray<T> operator[](Slice slc){
+		slc.update(shape[0]);
+
+		// TODO: implement some sort of check
+		// checkIndex(idx);
+		
+		int64_t start = slc.start * stride[0];
+		// if more than one dimension we are indexing Ndarrays
+		// if (ndim - 1 > 0){
+		// 	start *= shape[1] * stride[1];
+		// }
+
+		vector<size_t> newshape = shape;//(&shape[1],&shape[ndim]);
+		vector<size_t> newstride = stride;
+		newshape[0] = (slc.stop - slc.start) / slc.step;
+		newstride[0] = slc.step;
+		return Ndarray<T>(data+start, newshape, newstride);
+	}
+
+	const Ndarray<T> operator[](Slice slc) const{
+		return operator[](slc);
+	}
+
+	Ndarray<T> operator[](int64_t idx){
 		checkIndex(idx);
-		int start = idx;
+		int64_t start = idx * stride[0];
+		// if more than one dimension we are indexing Ndarrays
 		if (ndim - 1 > 0){
-			start *= shape[1];
+			start *= shape[1] * stride[1];
 		}
 
 		vector<size_t> newshape (&shape[1],&shape[ndim]);
-		return Ndarray<T>(data+start,newshape,ndim-1);
-		// return SliceProxy(Ndarray<T>(data+start,shape+1,ndim-1));
+		return Ndarray<T>(data+start,newshape);
 	}
 
-	const Ndarray<T> operator[](int idx) const{
+	const Ndarray<T> operator[](int64_t idx) const{
 		return operator[](idx);
 	}
 
@@ -145,6 +208,7 @@ ostream& operator<< (ostream& stream, vector<size_t>shape ) {
 	stream << ')';
 	return stream;
 }
+
 
 
 
