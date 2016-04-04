@@ -13,6 +13,7 @@ template <typename T>
 class SharedPointer{
 private:
 	// size_t start;
+	std::function<void(T*)> destructor;
 	size_t* count;
 	T* ptr;   // points into the managed data, default ptr=start, using operator+ might change that value
 	T* start; // points to the start of the managed data
@@ -20,24 +21,31 @@ private:
 public:
 
 	SharedPointer(): ptr(nullptr), start(nullptr), count(new size_t(0)){
+		destructor = [](int64_t* pointer)->void{};
 	}
 
 	SharedPointer(T* ptr_):
 		ptr(ptr_), start(ptr_), count(new size_t(1)){
+		destructor = [](int64_t* pointer)->void{
+			delete pointer;
+		};
 	}
 
-	SharedPointer(T* ptr_, std::function<void(T*)> destructor):
-		ptr(ptr_), start(ptr_), count(new size_t(1)){
+	SharedPointer(T* ptr_, std::function<void(T*)> destructor_):
+		ptr(ptr_), start(ptr_), count(new size_t(1)), destructor(destructor_){
 	}
 
 	
-	// init with raw pointer and non-zero refcount
-	SharedPointer(T* ptr_, size_t count_):
-		ptr(ptr_),start(ptr_),count(new size_t(count_+1)){
-	}
+	// // init with raw pointer and non-zero refcount
+	// SharedPointer(T* ptr_, size_t count_):
+	// 	ptr(ptr_),start(ptr_),count(new size_t(count_+1)){
+	// 	destructor = [](int64_t* pointer)->void{
+	// 		delete pointer;
+	// 	};
+	// }
 	
 	SharedPointer(const SharedPointer<T>& other):
-		count(other.count), ptr(other.ptr), start(other.start){
+		count(other.count), ptr(other.ptr), start(other.start), destructor(other.destructor){
 		++*count;
 	}
 
@@ -64,15 +72,17 @@ public:
 		swap(first.count, second.count); 
 		swap(first.ptr, second.ptr);
 		swap(first.start, second.start);
+		swap(first.destructor, second.destructor);
 		
 	}
 	
 	
 	~SharedPointer(){
 		if (--(*count) == 0){
-			delete start;
-			start = nullptr;
-			ptr = nullptr;
+			destructor(ptr);
+			// delete start;
+			// start = nullptr;
+			// ptr = nullptr;
 		}
 	}
 
