@@ -5,6 +5,7 @@
 
 #include <iostream>
 #include <vector>
+#include <functional>
 
 using namespace std;
 
@@ -25,6 +26,11 @@ public:
 		ptr(ptr_), start(ptr_), count(new size_t(1)){
 	}
 
+	SharedPointer(T* ptr_, std::function<void(T*)> destructor):
+		ptr(ptr_), start(ptr_), count(new size_t(1)){
+	}
+
+	
 	// init with raw pointer and non-zero refcount
 	SharedPointer(T* ptr_, size_t count_):
 		ptr(ptr_),start(ptr_),count(new size_t(count_+1)){

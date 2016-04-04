@@ -25,11 +25,6 @@ vector<int64_t> range(int64_t start, int64_t stop, int64_t step=1){
 
 int main(){
 	auto vec = range(0, 100, 2); 
-	// cout << vec << "\n";
-	// SharedPointer<int64_t> pointer(vec.data(), (size_t)vec.size());
-	// for (auto v: pointer){
-	// 	// cout << v << std::endl;
-	// }
-
+	SharedPointer<int64_t> test (vec.data(), [](int64_t* pointer)->void{});
 	return 0;
 }
