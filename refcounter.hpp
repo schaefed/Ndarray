@@ -1,5 +1,7 @@
+#ifndef REFCOUNTER_H
+#define REFCOUNTER_H
 
-#pragma once
+// #pragma once
 
 #include <vector>
 
@@ -84,3 +86,4 @@ public:
 	
 };
 
+#endif /* REFCOUNTER_H */

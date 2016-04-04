@@ -1,7 +1,7 @@
-// #ifndef NDARRAY_H
-// #define NDARRAY_H
+#ifndef NDARRAY_H
+#define NDARRAY_H
 
-#pragma once
+// #pragma once
 
 #include <iostream>
 #include <stdexcept>
@@ -187,6 +187,7 @@ ostream& operator<< (ostream& stream, vector<T>shape ) {
 	return stream;
 }
 
+#endif /* NDARRAY_H */
 
 
 
