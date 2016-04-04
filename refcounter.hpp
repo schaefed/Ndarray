@@ -3,6 +3,7 @@
 
 // #pragma once
 
+#include <iostream>
 #include <vector>
 
 using namespace std;
@@ -21,19 +22,19 @@ public:
 	}
 
 	SharedPointer(T* ptr_):
-		ptr(ptr_),start(ptr_),count(new size_t(1)){
+		ptr(ptr_), start(ptr_), count(new size_t(1)){
 	}
 
 	// init with raw pointer and non-zero refcount
 	SharedPointer(T* ptr_, size_t count_):
-		ptr(ptr_),start(ptr_),count(new size_t(count_ + 1)){
+		ptr(ptr_),start(ptr_),count(new size_t(count_+1)){
 	}
 	
 	SharedPointer(const SharedPointer<T>& other):
 		count(other.count), ptr(other.ptr), start(other.start){
 		++*count;
 	}
-	
+
 	SharedPointer operator=(SharedPointer<T> that){
 	// SharedPointer operator=(const SharedPointer<T>& that){
 
