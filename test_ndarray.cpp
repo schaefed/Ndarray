@@ -103,16 +103,28 @@ void testOutOfBounds(Ndarray<T> &array){
 	} catch(range_error){}
 }
 
+template<typename T>
+void testStaticDims(Ndarray<T> &array, const size_t ndim){
+		// try{
+	auto a1 = Ndarray<int64_t, 2>(array);
+	// try{
+	// 	auto a2 = Ndarray<int64_t, 3>(array);
+	// 	assert(false); // exception not throw
+	// }catch(...){}
+} 
+
 int main(){
 
 	vector<size_t> shape = {16, 16};
 	vector<int64_t> basevec  = range(0, 16*16);
 	Ndarray<int64_t> array(basevec.data(), shape, false);
-
+	const size_t ndim = 2;
+	
 	testGetItem(array, basevec);
 	testGetSlice(array);
 	testAssignment(array);
 	testOutOfBounds(array);
+	testStaticDims(array, ndim);
 	// testIterator(array);
 	
 	return 0;

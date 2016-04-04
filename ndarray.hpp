@@ -13,6 +13,9 @@
 
 using namespace std;
 
+// template<typename T, size_t N>
+// class Ndarray;
+
 class Slice {
 
 private:
@@ -38,19 +41,22 @@ public:
 template<typename T>
 void _deletePointer(T* pointer){
 	delete pointer;
-};
+}
 
 template<typename T>
 void _deleteArray(T* pointer){
 	delete[] pointer;
-};
+}
 
 template<typename T>
 void _deleteNothing(T* pointer){
-};
+}
+
+template<typename T, size_t ...dummy>
+class Ndarray;
 
 template<typename T>
-class Ndarray {
+class Ndarray<T> {
  
 public:
 
@@ -116,10 +122,10 @@ public:
 		swap(first.data, second.data);		
 	}
 
-	
-	// operator Ndarray<N, T>(){
-		
-	// }
+	template<size_t N>
+	operator Ndarray<T, N>(){
+		return Ndarray<T, N>(this);
+	}
 	
 	operator T(){
 		if (ndim > 0){
@@ -182,6 +188,18 @@ public:
 			return out;
 		}
 		return 0;
+	}
+};
+
+template<typename T, size_t N>
+class Ndarray<T, N> {
+private:
+	Ndarray<T> arr;
+public:
+	Ndarray(Ndarray<T> arr_):
+		arr(arr_)
+	{
+		assert(arr_.ndim == N); // illegal shape
 	}
 };
 
