@@ -34,7 +34,21 @@ public:
 		}
 	}
 };
-	
+
+template<typename T>
+void _deletePointer(T* pointer){
+	delete pointer;
+};
+
+template<typename T>
+void _deleteArray(T* pointer){
+	delete[] pointer;
+};
+
+template<typename T>
+void _deleteNothing(T* pointer){
+};
+
 template<typename T>
 class Ndarray {
  
@@ -47,31 +61,35 @@ public:
 
 	Ndarray(): shape(nullptr), ndim(0), data(nullptr) {}
 
-	Ndarray(vector<size_t> shape_, size_t refcount=0):
+	Ndarray(vector<size_t> shape_, bool manage=true):
 		ndim(shape_.size()),
 		shape(shape_),
-		data(SharedPointer<T>(new T[size()], refcount)){
-		stride = vector<size_t>(ndim,1);
+		data(SharedPointer<T>(new T[size()], manage==true ? _deleteArray<T> : _deleteNothing<T>))
+	{
+		stride = vector<size_t>(ndim, 1);
 	}
 
-	Ndarray(vector<T> &data_, size_t refcount=1):
+	Ndarray(vector<T> &data_, bool manage=false):
 		ndim(1),
 		shape(data_.size()),
 		stride(vector<size_t>(1, 1)),
-		data(SharedPointer<T>(&data_[0], refcount)){}
+		data(SharedPointer<T>(&data_[0], manage==true ? _deleteArray<T> : _deleteNothing<T>))
+	{}
 
-	Ndarray(vector<T> &data_, vector<size_t> shape_, size_t refcount=1):
+	Ndarray(vector<T> &data_, vector<size_t> shape_, bool manage=false):
 		ndim(shape_.size()),
 		shape(shape_),
-	 	data(SharedPointer<T>(&data_[0], refcount)) {
+		data(SharedPointer<T>(&data_[0], manage==true ? _deleteArray<T> : _deleteNothing<T>))
+	{
 	 	stride = vector<size_t>(ndim, 1);
 	}
 	
-	Ndarray(T* data_, vector<size_t> shape_, size_t refcount=1):
+	Ndarray(T* data_, vector<size_t> shape_, bool manage=false):
 		ndim(shape_.size()), shape(shape_),
-		data(SharedPointer<T>(data_, refcount)) {
+		data(SharedPointer<T>(data_, manage==true ? _deletePointer<T> : _deleteNothing<T>))
+	{
 	 	stride = vector<size_t>(ndim, 1);
-		}
+	}
 
 	Ndarray(SharedPointer<T> data_, vector<size_t> shape_):
 		ndim(shape_.size()), shape(shape_), data(data_) {

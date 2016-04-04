@@ -6,18 +6,18 @@
 
 #include "ndarray.hpp"
 
-template<typename T>
-void printVector(vector<T> v){
-	for (auto value : v){
-		cout << value << " ";
-	}
-	cout << endl;
-}
+// template<typename T>
+// void printVector(vector<T> v){
+// 	for (auto value : v){
+// 		cout << value << " ";
+// 	}
+// 	cout << endl;
+// }
 
-template<typename T>
-void testIterator(Ndarray<T> &base){
+// template<typename T>
+// void testIterator(Ndarray<T> &base){
 	
-}
+// }
 
 vector<int64_t> range(int64_t start, int64_t stop, int64_t step=1){
 	if (stop <= start){
@@ -46,10 +46,10 @@ void testGetItem(Ndarray<T> &base, vector<T> &compare){
 	}
 }
 
-// template<typename T>
-// void assertEqualArray(Ndarray<T>& array1, Ndarray<T>& array2){
+// // template<typename T>
+// // void assertEqualArray(Ndarray<T>& array1, Ndarray<T>& array2){
 	
-// }
+// // }
 
 	
 template<typename T>
@@ -107,13 +107,13 @@ int main(){
 
 	vector<size_t> shape = {16, 16};
 	vector<int64_t> basevec  = range(0, 16*16);
-	Ndarray<int64_t> array(basevec, shape, 1);
+	Ndarray<int64_t> array(basevec, shape, false);
 
 	testGetItem(array, basevec);
 	testGetSlice(array);
 	testAssignment(array);
 	testOutOfBounds(array);
-	testIterator(array);
+	// testIterator(array);
 	
 	return 0;
 }
