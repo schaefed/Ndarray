@@ -56,7 +56,7 @@ public:
 
 	std::vector<size_t> shape;
 	std::vector<size_t> stride;
-	size_t  ndim;
+	std::size_t  ndim;
 	SharedPointer<T> data;
 
 	Ndarray(): shape(nullptr), ndim(0), data(nullptr) {}
@@ -69,39 +69,33 @@ public:
 		stride = vector<size_t>(ndim, 1);
 	}
 
-	Ndarray(vector<T> &data_, bool manage=false):
-		ndim(1),
-		shape(data_.size()),
-		stride(vector<size_t>(1, 1)),
-		data(SharedPointer<T>(&data_[0], manage==true ? _deleteArray<T> : _deleteNothing<T>))
-	{}
-
-	Ndarray(vector<T> &data_, vector<size_t> shape_, bool manage=false):
+	Ndarray(T* data_, vector<size_t> shape_, bool manage=false):
 		ndim(shape_.size()),
 		shape(shape_),
-		data(SharedPointer<T>(&data_[0], manage==true ? _deleteArray<T> : _deleteNothing<T>))
-	{
-	 	stride = vector<size_t>(ndim, 1);
-	}
-	
-	Ndarray(T* data_, vector<size_t> shape_, bool manage=false):
-		ndim(shape_.size()), shape(shape_),
 		data(SharedPointer<T>(data_, manage==true ? _deletePointer<T> : _deleteNothing<T>))
 	{
 	 	stride = vector<size_t>(ndim, 1);
 	}
 
 	Ndarray(SharedPointer<T> data_, vector<size_t> shape_):
-		ndim(shape_.size()), shape(shape_), data(data_) {
+		ndim(shape_.size()),
+		shape(shape_),
+		data(data_)
+	{
 		stride = vector<size_t>(ndim,1);
 	}
 
 	Ndarray(SharedPointer<T> data_, vector<size_t> shape_, vector<size_t> stride_):
-		ndim(shape_.size()), shape(shape_), stride(stride_), data(data_) {}
-	
+		ndim(shape_.size()),
+		shape(shape_),
+		stride(stride_),
+		data(data_) {}
 
 	Ndarray(const Ndarray<T>& other):
-		ndim(other.ndim), shape(other.shape), stride(other.stride), data(other.data){}
+		ndim(other.ndim),
+		shape(other.shape),
+		stride(other.stride),
+		data(other.data) {}
 
 
 	Ndarray operator=(Ndarray<T> that){
