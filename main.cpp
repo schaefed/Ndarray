@@ -14,6 +14,11 @@ void printVector(vector<T> v){
 	cout << endl;
 }
 
+template<typename T>
+void testIterator(Ndarray<T> &base){
+	
+}
+
 vector<int64_t> range(int64_t start, int64_t stop, int64_t step=1){
 	if (stop <= start){
 		// should be something nicer...
@@ -25,7 +30,6 @@ vector<int64_t> range(int64_t start, int64_t stop, int64_t step=1){
 	for (int64_t x=start ; x < stop ; x = x + step){
 		out[i++] = x;
 	}
-	// iota(begin(out), end(out), start);
 	return out;
 }
 
@@ -42,25 +46,37 @@ void testGetItem(Ndarray<T> &base, vector<T> &compare){
 	}
 }
 
+// template<typename T>
+// void assertEqualArray(Ndarray<T>& array1, Ndarray<T>& array2){
+	
+// }
+
+	
 template<typename T>
 void testGetSlice(Ndarray<T> &base){
 
-	assert(base.ndim >= 2); // test array needs to have 2 or more dimensions
-	int64_t start = 0;
-	int64_t stop = base.shape[0];
-	int64_t step = 2;
-	auto sliced = base[Slice(start,stop,step)];
-
-	int64_t k = 0;
-	for (auto i : range(start, stop, step)){
-		for (auto j : range(0, base.shape[1])){
-			assert(sliced[k][j] == base[i][j]); // slicing incorrect!
+	auto checker = [](Ndarray<T>& sliced, Ndarray<T>& base){
+		int64_t start = 0;
+		int64_t stop = base.shape[0];
+		int64_t step = sliced.stride[0];
+		int64_t k = 0;
+		for (auto i : range(start, stop, step)){
+			for (auto j : range(0, base.shape[1], base.stride[1])){
+				assert(sliced[k][j] == base[i][j]); // slicing incorrect!
+			}
+			k++;
 		}
-		k++;
-	}
+	};
+	
+	assert(base.ndim >= 2); // test array needs to have 2 or more dimensions
+
+	auto sliced1 = base[Slice(0, base.shape[0], 2)];
+	auto sliced2 = sliced1[Slice(0, base.shape[0], 3)];
+
+	checker(sliced1, base);
+	checker(sliced2, base);
+	checker(sliced2, sliced1);
 }
-
-
 
 template<typename T>
 void testAssignment(Ndarray<T> array){
@@ -89,14 +105,15 @@ void testOutOfBounds(Ndarray<T> &array){
 
 int main(){
 
-	vector<size_t> shape = {16,16};
-	vector<int64_t> basevec  = range(0,16*16);
-	Ndarray<int64_t>array(basevec,shape,1);
+	vector<size_t> shape = {16, 16};
+	vector<int64_t> basevec  = range(0, 16*16);
+	Ndarray<int64_t> array(basevec, shape, 1);
 
-	testGetItem(array,basevec);
+	testGetItem(array, basevec);
 	testGetSlice(array);
 	testAssignment(array);
 	testOutOfBounds(array);
-
+	testIterator(array);
+	
 	return 0;
 }

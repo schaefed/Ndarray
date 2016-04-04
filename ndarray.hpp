@@ -25,8 +25,8 @@ public:
 	Slice(int64_t start_, int64_t step_=1):
 		start(start_), stop(1), step(step_), stop_given(false) {}
 
-	Slice(int64_t start_, int64_t stop_, int64_t step=1 ):
-		start(start_), stop(stop_), step(step), stop_given(true) {}
+	Slice(int64_t start_, int64_t stop_, int64_t step_=1 ):
+		start(start_), stop(stop_), step(step_), stop_given(true) {}
 
 	void update(size_t length){
 		if (not stop_given){
@@ -104,6 +104,11 @@ public:
 		swap(first.data, second.data);		
 	}
 
+	
+	// operator Ndarray<N, T>(){
+		
+	// }
+	
 	operator T(){
 		if (ndim > 0){
 			throw range_error("Cannot Convert Ndarray to scalar!");
@@ -125,15 +130,14 @@ public:
 
 	Ndarray<T> operator[](Slice slc){
 		slc.update(shape[0]);
-
 		// TODO: implement some sort of check
 		int64_t start = slc.start * stride[0];
 
 		vector<size_t> newshape = shape;//(&shape[1],&shape[ndim]);
 		vector<size_t> newstride = stride;
 		newshape[0] = (slc.stop - slc.start) / slc.step;
-		newstride[0] = slc.step;
-
+		newstride[0] = newstride[0] * slc.step;
+		
 		return Ndarray<T>(data+start, newshape, newstride);
 	}
 
