@@ -1,18 +1,13 @@
 #ifndef NDARRAY_H
 #define NDARRAY_H
 
-// #pragma once
-
 #include <iostream>
-#include <stdexcept>
 #include <vector>
 #include <assert.h>
-#include <memory>
 
 #include "refcounter.hpp"
 
 using namespace std;
-
 
 class Slice {
 
@@ -57,8 +52,6 @@ template<typename T>
 void _deleteNothing(T* pointer){
 }
 
-// template<typename T, size_t ...dummy>
-// class Ndarray;
 
 template<typename T, int16_t N=-1>
 	class Ndarray {
@@ -70,7 +63,12 @@ public:
 	std::vector<size_t> stride;
 	SharedPointer<T> data;
 
-	Ndarray(): shape(nullptr), ndim(0), data(nullptr) {}
+	Ndarray():
+		ndim(0),
+		shape(nullptr),
+		stride(nullptr),
+		data(nullptr)
+		{}
 
 	Ndarray(vector<size_t> shape_, bool manage=true):
 		ndim(shape_.size()),
