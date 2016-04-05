@@ -186,24 +186,8 @@ public:
 		return operator[](slc);
 	}
 
-	Ndarray<T,N> operator[](int64_t idx){
-		checkIndex(idx);
-		int64_t start = idx * stride[0];
-		// if more than one dimension we are indexing Ndarrays
-		if (ndim - 1 > 0){
-			start *= shape[1] * stride[1];
-		}
-
-		vector<size_t> newshape (&shape[1],&shape[ndim]);
-		return Ndarray<T>(data+start,newshape);
-	}
-
-	const Ndarray<T,N> operator[](int64_t idx) const{
-		return operator[](idx);
-	}
-
-	// template<typename U, int16_t M=-1>
-	// Ndarray<U,M> operator[](int64_t idx){
+		
+	// Ndarray<T,N> operator[](int64_t idx){
 	// 	checkIndex(idx);
 	// 	int64_t start = idx * stride[0];
 	// 	// if more than one dimension we are indexing Ndarrays
@@ -212,13 +196,33 @@ public:
 	// 	}
 
 	// 	vector<size_t> newshape (&shape[1],&shape[ndim]);
-	// 	return Ndarray<U,M>(data+start,newshape);
+	// 	return Ndarray<T>(data+start,newshape);
 	// }
 
-	// template<typename U, int16_t M=-1>
-	// const Ndarray<U,M> operator[](int64_t idx) const{
+	// const Ndarray<T,N> operator[](int64_t idx) const{
 	// 	return operator[](idx);
 	// }
+
+	template<typename U=T, int16_t M=N-1>
+	Ndarray<U,M> operator[](int64_t idx){
+		checkIndex(idx);
+		int64_t start = idx * stride[0];
+		// if more than one dimension we are indexing Ndarrays
+		if (ndim - 1 > 0){
+			start *= shape[1] * stride[1];
+		}
+
+		vector<size_t> newshape (&shape[1], &shape[ndim]);
+		if (M > -1){
+			return Ndarray<U,M>(data+start, newshape);
+		}
+		return Ndarray<U>(data+start, newshape);
+	}
+
+	template<typename U, int16_t M=-1>
+	const Ndarray<U,M> operator[](int64_t idx) const{
+		return operator[](idx);
+	}
 
 	size_t size(){
 		if (ndim > 0){

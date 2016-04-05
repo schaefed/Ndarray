@@ -107,18 +107,19 @@ template<typename T>
 void testStaticDims(Ndarray<T> &array, const size_t ndim){
 	vector<size_t> shape = {16, 16};
 	vector<int64_t> basevec  = range(0, 16*16);
-	Ndarray<int64_t> test1(basevec.data(), shape, false);
-	Ndarray<int64_t, 2> test2(basevec.data(), shape, false);
+	Ndarray<int64_t> free(basevec.data(), shape, false);
+	Ndarray<int64_t, 2> fixed(basevec.data(), shape, false);
 
 	// copy assign Ndarray<T, N> to Ndarray<T, N>
-	Ndarray<int64_t, 2> test3 = test2;
+	Ndarray<int64_t, 2> test1 = fixed;
 
 	// auto convert from Ndarray<T> to Ndarray<T,N>
-	Ndarray<int64_t, 2> test4 = test1; //.freeze();
+	Ndarray<int64_t, 2> test2 = free; //.freeze();
 	
 	// auto convert from Ndarray<T,N> to Ndarray<T>
-	Ndarray<int64_t> test5 = test2;
+	Ndarray<int64_t> test3 = fixed;
 
+	Ndarray<int64_t,1> test4 = fixed[1];
 	// slicing
 	// Ndarray<int64_t> test6 = test1[0]; //.freeze();
 	
