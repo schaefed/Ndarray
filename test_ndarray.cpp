@@ -105,8 +105,30 @@ void testOutOfBounds(Ndarray<T> &array){
 
 template<typename T>
 void testStaticDims(Ndarray<T> &array, const size_t ndim){
-		// try{
-	auto a1 = Ndarray<int64_t, 2>(array);
+	vector<size_t> shape = {16, 16};
+	vector<int64_t> basevec  = range(0, 16*16);
+	Ndarray<int64_t> test1(basevec.data(), shape, false);
+	Ndarray<int64_t, 2> test2(basevec.data(), shape, false);
+
+	// copy assign Ndarray<T, N> to Ndarray<T, N>
+	Ndarray<int64_t, 2> test3 = test2;
+
+	// auto convert from Ndarray<T> to Ndarray<T,N>
+	Ndarray<int64_t, 2> test4 = test1; //.freeze();
+	
+	// auto convert from Ndarray<T,N> to Ndarray<T>
+	Ndarray<int64_t> test5 = test2;
+
+	// slicing
+	// Ndarray<int64_t> test6 = test1[0]; //.freeze();
+	
+	
+	// auto test3 = test2[1];
+	// cout << test3.shape << "\n";
+	// Ndarray<int64_t,1> test3 = test2[1];
+	// Ndarray<int64_t, 3> test3(basevec.data(), shape, false);
+	// try{
+	// auto a1 = Ndarray<int64_t, 2>(array);
 	// try{
 	// 	auto a2 = Ndarray<int64_t, 3>(array);
 	// 	assert(false); // exception not throw
@@ -125,7 +147,7 @@ int main(){
 	testAssignment(array);
 	testOutOfBounds(array);
 	testStaticDims(array, ndim);
-	// testIterator(array);
+	// // testIterator(array);
 	
 	return 0;
 }

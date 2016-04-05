@@ -13,8 +13,6 @@
 
 using namespace std;
 
-// template<typename T, size_t N>
-// class Ndarray;
 
 class Slice {
 
@@ -52,11 +50,11 @@ template<typename T>
 void _deleteNothing(T* pointer){
 }
 
-template<typename T, size_t ...dummy>
-class Ndarray;
+// template<typename T, size_t ...dummy>
+// class Ndarray;
 
-template<typename T>
-class Ndarray<T> {
+template<typename T, int16_t N=-1>
+	class Ndarray {
  
 public:
 
@@ -73,6 +71,9 @@ public:
 		data(SharedPointer<T>(new T[size()], manage==true ? _deleteArray<T> : _deleteNothing<T>))
 	{
 		stride = vector<size_t>(ndim, 1);
+		if (N > 0) {
+			assert(ndim == N);
+		}
 	}
 
 	Ndarray(T* data_, vector<size_t> shape_, bool manage=false):
@@ -81,6 +82,9 @@ public:
 		data(SharedPointer<T>(data_, manage==true ? _deletePointer<T> : _deleteNothing<T>))
 	{
 	 	stride = vector<size_t>(ndim, 1);
+		if (N > 0) {
+			assert(ndim == N);
+		}
 	}
 
 	Ndarray(SharedPointer<T> data_, vector<size_t> shape_):
@@ -89,22 +93,46 @@ public:
 		data(data_)
 	{
 		stride = vector<size_t>(ndim,1);
+		if (N > 0) {
+			assert(ndim == N);
+		}
 	}
 
 	Ndarray(SharedPointer<T> data_, vector<size_t> shape_, vector<size_t> stride_):
 		ndim(shape_.size()),
 		shape(shape_),
 		stride(stride_),
-		data(data_) {}
-
-	Ndarray(const Ndarray<T>& other):
+		data(data_)
+	{
+		if (N > 0) {
+			assert(ndim == N);
+		}
+		
+	}
+	
+	Ndarray(const Ndarray<T,N>& other):
 		ndim(other.ndim),
 		shape(other.shape),
 		stride(other.stride),
-		data(other.data) {}
+		data(other.data)
+	{
+		if (N > 0) {
+			assert(ndim == N);
+		}
+	}
 
 
-	Ndarray operator=(Ndarray<T> that){
+	template<typename U, int16_t M=-1>
+	operator Ndarray<U,M>(){
+		/*
+		  Allows to convert in both directions:
+		  1. Ndarray<T>   -> Ndarray<T,N>
+		  2. Ndarray<T,N> -> Ndarray<T>
+		 */
+		return Ndarray<U,M>(this->data, this->shape, this->stride);
+	}
+	
+	Ndarray<T,N> operator=(Ndarray<T,N> that){
 		swap(*this, that);
 		return *this;
 	}
@@ -116,17 +144,12 @@ public:
 		data.get()[0] = other;
 	}
 
-	friend void swap(Ndarray<T>& first, Ndarray<T>& second){
+	friend void swap(Ndarray<T,N>& first, Ndarray<T,N>& second){
 		swap(first.shape, second.shape);
 		swap(first.ndim, second.ndim);
 		swap(first.data, second.data);		
 	}
 
-	template<size_t N>
-	operator Ndarray<T, N>(){
-		return Ndarray<T, N>(this);
-	}
-	
 	operator T(){
 		if (ndim > 0){
 			throw range_error("Cannot Convert Ndarray to scalar!");
@@ -146,7 +169,7 @@ public:
 		}
 	}
 
-	Ndarray<T> operator[](Slice slc){
+	Ndarray<T,N> operator[](Slice slc){
 		slc.update(shape[0]);
 		// TODO: implement some sort of check
 		int64_t start = slc.start * stride[0];
@@ -159,11 +182,11 @@ public:
 		return Ndarray<T>(data+start, newshape, newstride);
 	}
 
-	const Ndarray<T> operator[](Slice slc) const{
+	const Ndarray<T,N> operator[](Slice slc) const{
 		return operator[](slc);
 	}
 
-	Ndarray<T> operator[](int64_t idx){
+	Ndarray<T,N> operator[](int64_t idx){
 		checkIndex(idx);
 		int64_t start = idx * stride[0];
 		// if more than one dimension we are indexing Ndarrays
@@ -175,9 +198,27 @@ public:
 		return Ndarray<T>(data+start,newshape);
 	}
 
-	const Ndarray<T> operator[](int64_t idx) const{
+	const Ndarray<T,N> operator[](int64_t idx) const{
 		return operator[](idx);
 	}
+
+	// template<typename U, int16_t M=-1>
+	// Ndarray<U,M> operator[](int64_t idx){
+	// 	checkIndex(idx);
+	// 	int64_t start = idx * stride[0];
+	// 	// if more than one dimension we are indexing Ndarrays
+	// 	if (ndim - 1 > 0){
+	// 		start *= shape[1] * stride[1];
+	// 	}
+
+	// 	vector<size_t> newshape (&shape[1],&shape[ndim]);
+	// 	return Ndarray<U,M>(data+start,newshape);
+	// }
+
+	// template<typename U, int16_t M=-1>
+	// const Ndarray<U,M> operator[](int64_t idx) const{
+	// 	return operator[](idx);
+	// }
 
 	size_t size(){
 		if (ndim > 0){
@@ -188,18 +229,6 @@ public:
 			return out;
 		}
 		return 0;
-	}
-};
-
-template<typename T, size_t N>
-class Ndarray<T, N> {
-private:
-	Ndarray<T> arr;
-public:
-	Ndarray(Ndarray<T> arr_):
-		arr(arr_)
-	{
-		assert(arr_.ndim == N); // illegal shape
 	}
 };
 
