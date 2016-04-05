@@ -114,34 +114,39 @@ void testStaticDims(Ndarray<T> &array, const size_t ndim){
 		Ndarray<int64_t, 3> t1(basevec.data(), shape, false);
 		assert(false); // DimensionError not thrown
 	}catch(DimensionError){}
+
+	try{
+		Ndarray<int64_t, 2> t2(basevec.data(), vector<size_t>{2,4,4}, false);
+		assert(false); // DimensionError not thrown
+	}catch(DimensionError){}
+
 	
 	// copy assign Ndarray<T, N> to Ndarray<T, N>
-	Ndarray<int64_t, 2> test1 = fixed;
+	Ndarray<int64_t, 2> t3 = fixed;
+	try{
+		Ndarray<int64_t, 3> t4 = fixed;
+		assert(false); // DimensionError not thrown
+	}catch(DimensionError){}
 
 	// auto convert from Ndarray<T> to Ndarray<T,N>
-	Ndarray<int64_t, 2> test2 = free; //.freeze();
+	Ndarray<int64_t, 2> t5 = free; //.freeze();
 	
 	// auto convert from Ndarray<T,N> to Ndarray<T>
-	Ndarray<int64_t> test3 = fixed;
+	Ndarray<int64_t> t6 = fixed;
 
 	// slicing integer
-	Ndarray<int64_t, 1> test4 = fixed[1];
+	Ndarray<int64_t, 1> t7 = fixed[1];
+	try{
+		Ndarray<int64_t, 3> t8 = fixed[1];
+		assert(false); // DimensionError not thrown
+	}catch(DimensionError){}
 
 	// slicing Slice
 	Ndarray<int64_t, 2> test5 = fixed[Slice(0,5,1)];
-	// Ndarray<int64_t> test6 = test1[0]; //.freeze();
-	
-	
-	// auto test3 = test2[1];
-	// cout << test3.shape << "\n";
-	// Ndarray<int64_t,1> test3 = test2[1];
-	// Ndarray<int64_t, 3> test3(basevec.data(), shape, false);
-	// try{
-	// auto a1 = Ndarray<int64_t, 2>(array);
-	// try{
-	// 	auto a2 = Ndarray<int64_t, 3>(array);
-	// 	assert(false); // exception not throw
-	// }catch(...){}
+	try{
+		Ndarray<int64_t, 1> t8 = fixed[Slice(0,5,1)];
+		assert(false); // DimensionError not thrown
+	}catch(DimensionError){}
 } 
 
 int main(){
