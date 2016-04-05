@@ -38,8 +38,8 @@ void testGetItem(Ndarray<T> &base, vector<T> &compare){
 
 	assert(base.ndim >= 2); // test array needs to have 2 or more dimensions
 	int k;
-	for (int i=0 ; i<base.shape[0] ; i++){
-		for (int j=0 ; j<base.shape[0] ; j++){
+	for (uint64_t i=0 ; i<base.shape[0] ; i++){
+		for (uint64_t j=0 ; j<base.shape[0] ; j++){
 			assert(base[i][j] == compare[k]); // Values not identical
 			k++;
 		}
@@ -81,8 +81,8 @@ void testGetSlice(Ndarray<T> &base){
 template<typename T>
 void testAssignment(Ndarray<T> array){
 	assert(array.ndim >= 2); // test array needs to have 2 or more dimensions
-	for (int i=0 ; i< array.shape[0] ; i++){
-		for (int j=0 ; j< array.shape[0] ; j++){
+	for (uint64_t i=0 ; i<array.shape[0] ; i++){
+		for (uint64_t j=0 ; j< array.shape[0] ; j++){
 			array[i][j] = 42;
 			assert(array[i][0] == 42); // Assignment failed!
 		}

@@ -24,10 +24,17 @@ public:
 	int64_t step;
 
 	Slice(int64_t start_, int64_t step_=1):
-		start(start_), stop(1), step(step_), stop_given(false) {}
+		stop_given(false),
+		start(start_),
+		stop(1)
+	{}
 
 	Slice(int64_t start_, int64_t stop_, int64_t step_=1 ):
-		start(start_), stop(stop_), step(step_), stop_given(true) {}
+		stop_given(true),
+		start(start_),
+		stop(stop_),
+		step(step_)
+	{}
 
 	void update(size_t length){
 		if (not stop_given){
@@ -58,9 +65,9 @@ template<typename T, int16_t N=-1>
  
 public:
 
+	std::size_t  ndim;
 	std::vector<size_t> shape;
 	std::vector<size_t> stride;
-	std::size_t  ndim;
 	SharedPointer<T> data;
 
 	Ndarray(): shape(nullptr), ndim(0), data(nullptr) {}
@@ -83,7 +90,7 @@ public:
 	{
 	 	stride = vector<size_t>(ndim, 1);
 		if (N > 0) {
-			assert(ndim == N);
+			assert((int64_t) ndim == N);
 		}
 	}
 
@@ -94,7 +101,7 @@ public:
 	{
 		stride = vector<size_t>(ndim,1);
 		if (N > 0) {
-			assert(ndim == N);
+			assert((int64_t)ndim == N);
 		}
 	}
 
@@ -105,7 +112,7 @@ public:
 		data(data_)
 	{
 		if (N > 0) {
-			assert(ndim == N);
+			assert((int64_t)ndim == N);
 		}
 		
 	}
@@ -117,7 +124,7 @@ public:
 		data(other.data)
 	{
 		if (N > 0) {
-			assert(ndim == N);
+			assert((int64_t)ndim == N);
 		}
 	}
 
@@ -157,7 +164,7 @@ public:
 		return data.get()[0];
 	}
 	
-	void checkIndex(int64_t idx){
+	void checkIndex(uint64_t idx){
 		if (ndim < 0){
 			throw range_error("Too many indices!");
 		}
