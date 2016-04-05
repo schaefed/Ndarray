@@ -6,6 +6,7 @@
 #include <assert.h>
 
 #include "refcounter.hpp"
+#include "exceptions.hpp"
 
 using namespace std;
 
@@ -76,9 +77,7 @@ public:
 		data(SharedPointer<T>(new T[size()], manage==true ? _deleteArray<T> : _deleteNothing<T>))
 	{
 		stride = vector<size_t>(ndim, 1);
-		if (N > 0) {
-			assert(ndim == N);
-		}
+		checkDimensionality();
 	}
 
 	Ndarray(T* data_, vector<size_t> shape_, bool manage=false):
@@ -87,9 +86,7 @@ public:
 		data(SharedPointer<T>(data_, manage==true ? _deletePointer<T> : _deleteNothing<T>))
 	{
 	 	stride = vector<size_t>(ndim, 1);
-		if (N > 0) {
-			assert((int64_t) ndim == N);
-		}
+		checkDimensionality();
 	}
 
 	Ndarray(SharedPointer<T> data_, vector<size_t> shape_):
@@ -98,9 +95,7 @@ public:
 		data(data_)
 	{
 		stride = vector<size_t>(ndim,1);
-		if (N > 0) {
-			assert((int64_t)ndim == N);
-		}
+		checkDimensionality();
 	}
 
 	Ndarray(SharedPointer<T> data_, vector<size_t> shape_, vector<size_t> stride_):
@@ -109,10 +104,7 @@ public:
 		stride(stride_),
 		data(data_)
 	{
-		if (N > 0) {
-			assert((int64_t)ndim == N);
-		}
-		
+		checkDimensionality();
 	}
 	
 	Ndarray(const Ndarray<T,N>& other):
@@ -121,11 +113,10 @@ public:
 		stride(other.stride),
 		data(other.data)
 	{
-		if (N > 0) {
-			assert((int64_t)ndim == N);
-		}
+		checkDimensionality();
 	}
-
+		
+		
 
 	template<typename U, int16_t M=-1>
 	operator Ndarray<U,M>(){
@@ -137,6 +128,7 @@ public:
 		return Ndarray<U,M>(this->data, this->shape, this->stride);
 	}
 	
+		
 	Ndarray<T,N> operator=(Ndarray<T,N> that){
 		swap(*this, that);
 		return *this;
@@ -163,17 +155,22 @@ public:
 	}
 	
 	void checkIndex(uint64_t idx){
-		if (ndim < 0){
-			throw range_error("Too many indices!");
-		}
-		if (idx < 0) {
-			throw range_error("Negative indices not supported!");
+		if (ndim < 1){
+			throw IndexError("Too many indices!");
 		}
 		if (idx >= shape[0]) {
-			throw range_error("Index out of bounds");
+			throw IndexError("Index out of bounds");
 		}
 	}
 
+	void checkDimensionality(){
+		if (N > 0) {
+			if ((int64_t)ndim != N){
+				throw DimensionError("Invalid dimensions!");
+			}
+		}
+	}
+		
 	template<typename U=T, int16_t M=-1>
 	Ndarray<T,N> operator[](Slice slc){
 		slc.update(shape[0]);

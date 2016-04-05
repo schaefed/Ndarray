@@ -95,12 +95,12 @@ void testOutOfBounds(Ndarray<T> &array){
 	try{
 		array[-1];
 		assert(false); // exception not thrown!
-	} catch(range_error){}
+	} catch(IndexError){}
 
 	try{
 		array[array.shape[0]];
 		assert(false); // exception not thrown!
-	} catch(range_error){}
+	} catch(IndexError){}
 }
 
 template<typename T>
@@ -110,6 +110,11 @@ void testStaticDims(Ndarray<T> &array, const size_t ndim){
 	Ndarray<int64_t> free(basevec.data(), shape, false);
 	Ndarray<int64_t, 2> fixed(basevec.data(), shape, false);
 
+	try{
+		Ndarray<int64_t, 3> t1(basevec.data(), shape, false);
+		assert(false); // DimensionError not thrown
+	}catch(DimensionError){}
+	
 	// copy assign Ndarray<T, N> to Ndarray<T, N>
 	Ndarray<int64_t, 2> test1 = fixed;
 
