@@ -119,8 +119,11 @@ void testStaticDims(Ndarray<T> &array, const size_t ndim){
 	// auto convert from Ndarray<T,N> to Ndarray<T>
 	Ndarray<int64_t> test3 = fixed;
 
-	Ndarray<int64_t,1> test4 = fixed[1];
-	// slicing
+	// slicing integer
+	Ndarray<int64_t, 1> test4 = fixed[1];
+
+	// slicing Slice
+	Ndarray<int64_t, 2> test5 = fixed[Slice(0,5,1)];
 	// Ndarray<int64_t> test6 = test1[0]; //.freeze();
 	
 	
