@@ -4,7 +4,7 @@
 #include <iostream>
 #include <stdexcept>
 
-#include "ndarray.hpp"
+#include "ndarray.cpp"
 
 // template<typename T>
 // void printVector(vector<T> v){
