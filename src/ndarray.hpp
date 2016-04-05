@@ -5,8 +5,8 @@
 #include <vector>
 #include <assert.h>
 
-#include "refcounter.cpp"
-#include "exceptions.cpp"
+#include "refcounter.hpp"
+#include "exceptions.hpp"
 
 using namespace std;
 
