@@ -1,6 +1,6 @@
 
 CC=g++
-CFLAGS=-std=c++0x -Wall
+CFLAGS=-std=c++0x -Wall -g -pedantic
 
 BUILDDIR  = build
 SRCDIR	  = src
@@ -21,9 +21,9 @@ test: $(TESTS)
 $(OBJFILES): $(BUILDDIR)/%.o : $(SRCDIR)/%.cpp
 	$(CC) -c $(CFLAGS) $< -o $@
 
+# not correct!
 $(TESTS): $(OBJFILES) $(TESTFILES)
 	$(CC) -I$(SRCDIR) $(CFLAGS) $(OBJFILES) $< -o $@
-
 
 %.depends: %.cpp
 	$(CC) -M $(CFLAGS) $< > $@
