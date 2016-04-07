@@ -42,6 +42,7 @@ public:
 
 
 	SharedPointer(const SharedPointer<T>& other):
+		/* copy constructor */
 		ptr(other.ptr),
 		start(other.start),
 		count(other.count),
@@ -50,7 +51,14 @@ public:
 		++*count;
 	}
 
-	SharedPointer operator=(SharedPointer<T> that){
+	SharedPointer(SharedPointer<T>&& other):
+		/* move constructor */
+		SharedPointer<T>()
+	{
+		swap(*this, other);
+	}
+	
+	SharedPointer& operator=(SharedPointer<T> that){
 		/* copy-and-swap: create a copy (that is passed by value)
 		   swap values of this and that and take the former
 		   content of this down with that

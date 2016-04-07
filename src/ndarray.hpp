@@ -59,16 +59,16 @@ template<typename T, int N=-1>
  
 public:
 
-	std::size_t  ndim;
+	std::size_t ndim;
 	std::vector<size_t> shape;
 	std::vector<size_t> stride;
 	SharedPointer<T> data;
 
 	Ndarray():
 		ndim(0),
-		shape(nullptr),
-		stride(nullptr),
-		data(nullptr)
+		shape(std::vector<size_t>()),
+		stride(std::vector<size_t>()),
+		data(SharedPointer<T>())
 		{}
 
 	Ndarray(vector<size_t> shape_, bool manage=true):
@@ -108,6 +108,7 @@ public:
 	}
 	
 	Ndarray(const Ndarray<T,N>& other):
+		/* copy constructor */
 		ndim(other.ndim),
 		shape(other.shape),
 		stride(other.stride),
@@ -116,17 +117,14 @@ public:
 		checkDimensionality();
 	}
 		
-	// Ndarray(Ndarray<T,N>& other):
-	// 	ndim(other.ndim),
-	// 	shape(other.shape),
-	// 	stride(other.stride),
-	// 	data(other.data)
-	// {
-	// 	checkDimensionality();
-	// }
-		
-				
-
+	
+	Ndarray(Ndarray<T,N>&& other):
+		/* move constructor */
+		Ndarray<T,N>()
+	{
+		swap(*this, other);
+	}
+			
 	template<typename U, int M=-1>
 	operator Ndarray<U,M>(){
 		/*
@@ -138,11 +136,11 @@ public:
 	}
 	
 		
-	Ndarray<T,N> operator=(Ndarray<T,N> that){
+	Ndarray<T,N>& operator=(Ndarray<T,N> that){
 		swap(*this, that);
 		return *this;
 	}
-
+		
 	void operator=(const T& other){
 		if (ndim > 1){
 			throw range_error("Assigning to a Ndarray is not supported yet!");
