@@ -54,7 +54,7 @@ void _deleteNothing(T* pointer){
 }
 
 
-template<typename T, int16_t N=-1>
+template<typename T, int N=-1>
 	class Ndarray {
  
 public:
@@ -118,7 +118,7 @@ public:
 		
 		
 
-	template<typename U, int16_t M=-1>
+	template<typename U, int M=-1>
 	operator Ndarray<U,M>(){
 		/*
 		  Allows to convert in both directions:
