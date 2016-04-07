@@ -60,6 +60,7 @@ public:
 		return *this;
 	}
 
+
 	friend void swap(SharedPointer<T>& first, SharedPointer<T>& second) 
 	{
 

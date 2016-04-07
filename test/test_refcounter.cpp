@@ -21,9 +21,19 @@ vector<int64_t> range(int64_t start, int64_t stop, int64_t step=1){
 	return out;
 }
 
+void testCounting(){
+	auto vec = range(0, 100, 2); 
+	SharedPointer<int64_t> manged (vec.data(), [](int64_t* pointer)->void{});
+	for (int i; i < 10; i++){
+		SharedPointer<int64_t>ref(managed);
+		cout << ref.getCount() << endl;
+	}
+}
 
 int main(){
-	auto vec = range(0, 100, 2); 
-	SharedPointer<int64_t> test (vec.data(), [](int64_t* pointer)->void{});
+	cout << "Testing\n";
+	testCounting();
+	// auto vec = range(0, 100, 2); 
+	// SharedPointer<int64_t> test (vec.data(), [](int64_t* pointer)->void{});
 	return 0;
 }

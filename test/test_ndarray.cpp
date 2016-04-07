@@ -37,7 +37,7 @@ template<typename T>
 void testGetItem(Ndarray<T> &base, vector<T> &compare){
 
 	assert(base.ndim >= 2); // test array needs to have 2 or more dimensions
-	int k;
+	int k=0;
 	for (uint64_t i=0 ; i<base.shape[0] ; i++){
 		for (uint64_t j=0 ; j<base.shape[0] ; j++){
 			assert(base[i][j] == compare[k]); // Values not identical
@@ -104,7 +104,7 @@ void testOutOfBounds(Ndarray<T> &array){
 }
 
 template<typename T>
-void testStaticDims(Ndarray<T> &array, const size_t ndim){
+void testStaticDims(Ndarray<T> &array){
 	vector<size_t> shape = {16, 16};
 	vector<int64_t> basevec  = range(0, 16*16);
 	Ndarray<int64_t> free(basevec.data(), shape, false);
@@ -151,17 +151,17 @@ void testStaticDims(Ndarray<T> &array, const size_t ndim){
 
 int main(){
 
+
 	vector<size_t> shape = {16, 16};
 	vector<int64_t> basevec  = range(0, 16*16);
 	Ndarray<int64_t> array(basevec.data(), shape, false);
-	const size_t ndim = 2;
-	
+
 	testGetItem(array, basevec);
 	testGetSlice(array);
 	testAssignment(array);
 	testOutOfBounds(array);
-	testStaticDims(array, ndim);
-	// // testIterator(array);
+	testStaticDims(array);
+	// testIterator(array);
 	
 	return 0;
 }
