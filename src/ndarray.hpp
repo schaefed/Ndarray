@@ -116,7 +116,16 @@ public:
 		checkDimensionality();
 	}
 		
+	// Ndarray(Ndarray<T,N>& other):
+	// 	ndim(other.ndim),
+	// 	shape(other.shape),
+	// 	stride(other.stride),
+	// 	data(other.data)
+	// {
+	// 	checkDimensionality();
+	// }
 		
+				
 
 	template<typename U, int M=-1>
 	operator Ndarray<U,M>(){
@@ -142,8 +151,9 @@ public:
 	}
 
 	friend void swap(Ndarray<T,N>& first, Ndarray<T,N>& second){
-		swap(first.shape, second.shape);
 		swap(first.ndim, second.ndim);
+		swap(first.shape, second.shape);
+		swap(first.stride, second.stride);
 		swap(first.data, second.data);		
 	}
 
@@ -171,7 +181,7 @@ public:
 		}
 	}
 		
-	template<typename U=T, int16_t M=-1>
+	template<typename U=T, int M=-1>
 	Ndarray<T,N> operator[](Slice slc){
 		slc.update(shape[0]);
 		// TODO: implement some sort of check
@@ -185,12 +195,12 @@ public:
 		return Ndarray<T>(data+start, newshape, newstride);
 	}
 
-	template<typename U=T, int16_t M=-1>
+	template<typename U=T, int M=-1>
 	const Ndarray<T,N> operator[](Slice slc) const{
 		return operator[](slc);
 	}
 	
-	template<typename U=T, int16_t M=-1>
+	template<typename U=T, int M=-1>
 	Ndarray<U,M> operator[](int64_t idx){
 		checkIndex(idx);
 		int64_t start = idx * stride[0];
@@ -203,7 +213,7 @@ public:
 		return Ndarray<U, M>(data+start, newshape);
 	}
 
-	template<typename U, int16_t M=-1>
+	template<typename U, int M=-1>
 	const Ndarray<U,M> operator[](int64_t idx) const{
 		return operator[](idx);
 	}
