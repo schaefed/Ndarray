@@ -22,7 +22,7 @@ public:
 	SharedPointer():
 		ptr(nullptr),
 		start(nullptr),
-		count(new size_t(0)),
+		count(nullptr),
 		destructor([](int64_t* pointer)->void{})
 	{}
 
@@ -39,7 +39,6 @@ public:
 		count(new size_t(1)),
 		destructor(destructor_)
 	{}
-
 
 	SharedPointer(const SharedPointer<T>& other):
 		/* copy constructor */
@@ -68,7 +67,6 @@ public:
 		return *this;
 	}
 
-
 	friend void swap(SharedPointer<T>& first, SharedPointer<T>& second) 
 	{
 
@@ -78,16 +76,13 @@ public:
 		swap(first.ptr, second.ptr);
 		swap(first.start, second.start);
 		swap(first.destructor, second.destructor);
-		
 	}
-	
 	
 	~SharedPointer(){
 		if (--(*count) == 0){
 			destructor(ptr);
 		}
 	}
-
 
 	T* get(){
 		return ptr;

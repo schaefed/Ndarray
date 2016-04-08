@@ -148,6 +148,12 @@ public:
 		data.get()[0] = other;
 	}
 
+	operator T(){
+		if (ndim > 0){
+			throw range_error("Cannot Convert Ndarray to scalar!");
+		}
+		return data.get()[0];
+	}
 	friend void swap(Ndarray<T,N>& first, Ndarray<T,N>& second){
 		swap(first.ndim, second.ndim);
 		swap(first.shape, second.shape);
@@ -155,13 +161,6 @@ public:
 		swap(first.data, second.data);		
 	}
 
-	operator T(){
-		if (ndim > 0){
-			throw range_error("Cannot Convert Ndarray to scalar!");
-		}
-		return data.get()[0];
-	}
-	
 	void checkIndex(uint64_t idx){
 		if (ndim < 1){
 			throw IndexError("Too many indices!");
@@ -232,7 +231,7 @@ public:
 template<typename T>
 ostream& operator<< (ostream& stream, vector<T>shape ) {
 	stream << '(';
-	for (int i = 0; i < shape.size() ; i++){
+	for (size_t i = 0; i < shape.size() ; i++){
 		stream << shape[i];
 		if (i < shape.size() - 1){
 			stream << ", ";

@@ -153,13 +153,12 @@ int main(){
 	vector<size_t> shape = {16, 16};
 	vector<int64_t> basevec  = range(0, 16*16);
 	Ndarray<int64_t> array(basevec.data(), shape, false);
-	
-	testGetItem(array, basevec);
+
 	testGetSlice(array);
-	// testAssignment(array);
-	// testOutOfBounds(array);
-	// testStaticDims(array);
-	// testIterator(array);
+	testAssignment(array);
+	testOutOfBounds(array);
+	testStaticDims(array);
+	// // testIterator(array);
 	
 	return 0;
 }

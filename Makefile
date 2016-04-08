@@ -6,30 +6,31 @@ BUILDDIR  = build
 SRCDIR	  = src
 TESTDIR	  = test
 
-SRCFILES  = $(wildcard $(SRCDIR)/*.cpp)
-OBJFILES  = $(patsubst $(SRCDIR)/%.cpp,$(BUILDDIR)/%.o,$(SRCFILES))
-DEPSFILES = $(patsubst $(SRCDIR)/%.cpp,$(BUILDDIR)/%.depends,$(SRCFILES))
+# SRCFILES  = $(wildcard $(SRCDIR)/*.cpp)
+# OBJFILES  = $(patsubst $(SRCDIR)/%.cpp, $(BUILDDIR)/%.o, $(SRCFILES))
+# DEPSFILES = $(patsubst $(SRCDIR)/%.cpp, $(BUILDDIR)/%.depends, $(SRCFILES))
 TESTFILES = $(wildcard $(TESTDIR)/*.cpp)
-TESTS     = $(basename $(TESTFILES))
+TESTS  = $(patsubst $(TESTDIR)/%.cpp, $(TESTDIR)/%.test, $(TESTFILES))
+
 
 all: test
 
 test: $(TESTS)
-	$(TESTDIR)/test_refcounter
-	$(TESTDIR)/test_ndarray
+	$(foreach test,$(TESTS),./$(test);)
 
-$(OBJFILES): $(BUILDDIR)/%.o : $(SRCDIR)/%.cpp
-	$(CC) -c $(CFLAGS) $< -o $@
 
-# not correct!
-$(TESTS): $(OBJFILES) $(TESTFILES)
-	$(CC) -I$(SRCDIR) $(CFLAGS) $(OBJFILES) $< -o $@
+$(TESTS): $(OBJFILES) $(TESTDIR)/%.test : $(TESTDIR)/%.cpp
+	$(CC) -I$(SRCDIR) $(CFLAGS) $< -o $@
 
-%.depends: %.cpp
-	$(CC) -M $(CFLAGS) $< > $@
 
-dir:
-	mkdir -p $(BUILDDIR)
+# $(OBJFILES): dir $(BUILDDIR)/%.o : $(SRCDIR)/%.cpp
+# 	$(CC) -c $(CFLAGS) $< -o $@
+
+# %.depends: %.cpp
+# 	$(CC) -M $(CFLAGS) $< > $@
+
+# dir:
+# 	mkdir -p $(BUILDDIR)
 
 clean:
 	$(RM) $(OBJFILES) $(DEPSFILES) $(TESTS) 
