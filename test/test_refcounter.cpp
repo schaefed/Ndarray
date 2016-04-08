@@ -3,6 +3,7 @@
 #include <numeric>
 #include <iostream>
 #include <stdexcept>
+#include <assert.h>
 
 #include "refcounter.hpp"
 
@@ -21,19 +22,34 @@ vector<int64_t> range(int64_t start, int64_t stop, int64_t step=1){
 	return out;
 }
 
-// void testCounting(){
-// 	auto vec = range(0, 100, 2); 
-// 	SharedPointer<int64_t> manged (vec.data(), [](int64_t* pointer)->void{});
-// 	for (int i; i < 10; i++){
-// 		SharedPointer<int64_t>ref(managed);
-// 		cout << ref.getCount() << endl;
-// 	}
-// }
+void testCounting(){
+	typedef SharedPointer<int64_t> sptr;
+
+	auto vec = range(0, 100, 2); 
+	auto references = std::vector<sptr>();
+	int niter = 10;
+	
+	sptr managed (vec.data(), [](int64_t* pointer)->void{});
+	assert(managed.getCount() == 1); // reference counter incorrect!
+
+	for (int i=0; i<niter; i++){
+		assert (managed.getCount() == (size_t)i+1); // Refernce counting incorrect
+		references.push_back(sptr(managed));
+		auto tmp1 = sptr(managed);
+		auto tmp2 = sptr(managed);
+		assert(tmp1.getCount() == managed.getCount()); // Reference counter not identical
+		assert(tmp2.getCount() == managed.getCount()); // Reference counter not identical
+	}
+
+	for (int i=0; i<niter; i++){
+		references.pop_back();
+		assert(managed.getCount() == (size_t)niter-i); // reference counter incorrect!
+	}
+	assert(managed.getCount() == 1); // reference counter incorrect!
+	
+}
 
 int main(){
-	cout << "Testing\n";
-	// testCounting();
-	// auto vec = range(0, 100, 2); 
-	// SharedPointer<int64_t> test (vec.data(), [](int64_t* pointer)->void{});
+	testCounting();
 	return 0;
 }

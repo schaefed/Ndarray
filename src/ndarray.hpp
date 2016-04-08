@@ -3,7 +3,6 @@
 
 #include <iostream>
 #include <vector>
-#include <assert.h>
 
 #include "refcounter.hpp"
 #include "exceptions.hpp"

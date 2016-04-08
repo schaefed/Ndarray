@@ -13,7 +13,7 @@ TESTFILES = $(wildcard $(TESTDIR)/*.cpp)
 TESTS  = $(patsubst $(TESTDIR)/%.cpp, $(TESTDIR)/%.test, $(TESTFILES))
 
 
-all: test
+all: clean test
 
 test: $(TESTS)
 	$(foreach test,$(TESTS),./$(test);)

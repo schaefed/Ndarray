@@ -3,6 +3,7 @@
 #include <numeric>
 #include <iostream>
 #include <stdexcept>
+#include <assert.h>
 
 #include "ndarray.hpp"
 
