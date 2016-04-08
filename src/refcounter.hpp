@@ -19,10 +19,11 @@ private:
 	
 public:
 
-	SharedPointer():
+	SharedPointer()
+		:
 		ptr(nullptr),
 		start(nullptr),
-		count(nullptr),
+		count(new size_t(0)),
 		destructor([](int64_t* pointer)->void{})
 	{}
 
