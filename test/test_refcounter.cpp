@@ -23,6 +23,7 @@ vector<int64_t> range(int64_t start, int64_t stop, int64_t step=1){
 }
 
 void testCounting(){
+
 	typedef SharedPointer<int64_t> sptr;
 
 	auto vec = range(0, 100, 2); 
@@ -46,10 +47,22 @@ void testCounting(){
 		assert(managed.getCount() == (size_t)niter-i); // reference counter incorrect!
 	}
 	assert(managed.getCount() == 1); // reference counter incorrect!
-	
+}
+
+void testSlicing(){
+
+	typedef SharedPointer<int64_t> sptr;
+
+	auto vec = range(0, 100, 2); 
+	sptr managed (vec.data(), [](int64_t* pointer) -> void{});
+
+	for (uint i=0 ; i<vec.size() ; i++){
+		assert(vec[i] == managed[i]) ; // Element access incorrect
+	}
 }
 
 int main(){
 	testCounting();
+	testSlicing();
 	return 0;
 }

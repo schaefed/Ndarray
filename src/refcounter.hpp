@@ -89,12 +89,16 @@ public:
 		return ptr;
 	}
 
-	SharedPointer operator+(long value){
+	SharedPointer operator+(int64_t value){
 		SharedPointer<T> out(*this);
 		out.ptr += value;
 		return out;
 	}
 
+	T& operator[](int64_t idx){
+		return ptr[idx];
+	}
+	
 	size_t getCount(){
 		return *count;
 	}
