@@ -204,7 +204,6 @@ public:
 		if (ndim - 1 > 0){
 			start *= shape[1] * stride[1];
 		}
-
 		vector<size_t> newshape (&shape[1], &shape[ndim]);
 		return Ndarray<U, M>(data+start, newshape);
 	}
