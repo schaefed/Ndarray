@@ -91,16 +91,16 @@ template<typename T>
 void testStaticDims(Ndarray<T> &array){
 	vector<size_t> shape = {16, 16};
 	vector<int64_t> basevec  = range(0, 16*16);
-	Ndarray<int64_t> free(basevec.data(), shape, false);
-	Ndarray<int64_t, 2> fixed(basevec.data(), shape, false);
+	Ndarray<int64_t> free(basevec.data(), shape);
+	Ndarray<int64_t, 2> fixed(basevec.data(), shape);
 
 	try{
-		Ndarray<int64_t, 3> t1(basevec.data(), shape, false);
+		Ndarray<int64_t, 3> t1(basevec.data(), shape);
 		assert(false); // DimensionError not thrown
 	}catch(DimensionError){}
 
 	try{
-		Ndarray<int64_t, 2> t2(basevec.data(), vector<size_t>{2,4,4}, false);
+		Ndarray<int64_t, 2> t2(basevec.data(), vector<size_t>{2,4,4});
 		assert(false); // DimensionError not thrown
 	}catch(DimensionError){}
 
@@ -138,7 +138,7 @@ int main(){
 
 	vector<size_t> shape = {16, 16};
 	vector<int64_t> basevec  = range(0, 16*16);
-	Ndarray<int64_t> array(basevec.data(), shape, false);
+	Ndarray<int64_t> array(basevec.data(), shape);
 
 	testGetSlice(array);
 	testAssignment(array);

@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <vector>
+#include <functional>
 
 #include "refcounter.hpp"
 #include "exceptions.hpp"
@@ -39,11 +40,6 @@ public:
 };
 
 template<typename T>
-void _deletePointer(T* pointer){
-	delete pointer;
-}
-
-template<typename T>
 void _deleteArray(T* pointer){
 	delete[] pointer;
 }
@@ -70,19 +66,19 @@ public:
 		data(SharedPointer<T>())
 		{}
 
-	Ndarray(vector<size_t> shape_, bool manage=true):
+	Ndarray(vector<size_t> shape_, std::function<void(T*)> destructor=_deleteArray<T>):
 		ndim(shape_.size()),
 		shape(shape_),
-		data(SharedPointer<T>(new T[size()], manage==true ? _deleteArray<T> : _deleteNothing<T>))
+		data(SharedPointer<T>(new T[size()], destructor))
 	{
 		stride = vector<size_t>(ndim, 1);
 		checkDimensionality();
 	}
 
-	Ndarray(T* data_, vector<size_t> shape_, bool manage=false):
+	Ndarray(T* data_, vector<size_t> shape_, std::function<void(T*)> destructor=_deleteNothing<T>):
 		ndim(shape_.size()),
 		shape(shape_),
-		data(SharedPointer<T>(data_, manage==true ? _deletePointer<T> : _deleteNothing<T>))
+		data(SharedPointer<T>(data_, destructor))
 	{
 	 	stride = vector<size_t>(ndim, 1);
 		checkDimensionality();
@@ -136,11 +132,17 @@ public:
 	
 		
 	Ndarray<T,N>& operator=(Ndarray<T,N> that){
+		/* copy asignment operator*/
 		swap(*this, that);
 		return *this;
 	}
 		
 	void operator=(const T& other){
+		/*
+		  Asignment is handled here and not in operator[]. This seems to
+		  be an easy way to allow asignments of higher complexity
+		  (i.e. broadcasting)
+		 */
 		if (ndim > 1){
 			throw range_error("Assigning to a Ndarray is not supported yet!");
 		}
@@ -172,7 +174,7 @@ public:
 
 	void checkDimensionality(){
 		if (N > 0) {
-			if ((int64_t)ndim != N){
+			if (static_cast<int64_t>(ndim) != N){
 				throw DimensionError("Invalid dimensions!");
 			}
 		}
@@ -217,7 +219,7 @@ public:
 	size_t size(){
 		if (ndim > 0){
 			size_t out = 1;
-			for (int i=0; i<ndim; i++){
+			for (uint64_t i=0; i<ndim; i++){
 				out *= shape[i];
 			}
 			return out;
