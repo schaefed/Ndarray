@@ -149,10 +149,11 @@ public:
 
 	operator T(){
 		if (ndim > 0){
-			throw range_error("Cannot Convert Ndarray to scalar!");
+			throw range_error("Only length-1 arrays can be converted to scalars!");
 		}
 		return data.get()[0];
 	}
+		
 	friend void swap(Ndarray<T,N>& first, Ndarray<T,N>& second){
 		swap(first.ndim, second.ndim);
 		swap(first.shape, second.shape);

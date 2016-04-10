@@ -1,8 +1,6 @@
 #ifndef REFCOUNTER_H
 #define REFCOUNTER_H
 
-// #pragma once
-
 #include <iostream>
 #include <vector>
 #include <functional>
