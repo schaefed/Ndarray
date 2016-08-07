@@ -145,6 +145,6 @@ int main(){
 	testOutOfBounds(array);
 	testStaticDims(array);
 	// // testIterator(array);
-	
+	// Ndarray<int64_t,2> dummy(array);
 	return 0;
 }

@@ -4,8 +4,8 @@
 #include <iostream>
 #include <vector>
 #include <functional>
+#include <memory>
 
-#include "refcounter.hpp"
 #include "exceptions.hpp"
 
 using namespace std;
@@ -57,19 +57,19 @@ public:
 	std::size_t ndim;
 	std::vector<size_t> shape;
 	std::vector<size_t> stride;
-	SharedPointer<T> data;
+	std::shared_ptr<T> data;
 
 	Ndarray():
 		ndim(0),
 		shape(std::vector<size_t>()),
 		stride(std::vector<size_t>()),
-		data(SharedPointer<T>())
+		data(shared_ptr<T>(nullptr))
 		{}
 
 	Ndarray(vector<size_t> shape_, std::function<void(T*)> destructor=_deleteArray<T>):
 		ndim(shape_.size()),
 		shape(shape_),
-		data(SharedPointer<T>(new T[size()], destructor))
+		data(shared_ptr<T>(new T[size()], destructor))
 	{
 		stride = vector<size_t>(ndim, 1);
 		checkDimensionality();
@@ -78,13 +78,13 @@ public:
 	Ndarray(T* data_, vector<size_t> shape_, std::function<void(T*)> destructor=_deleteNothing<T>):
 		ndim(shape_.size()),
 		shape(shape_),
-		data(SharedPointer<T>(data_, destructor))
+		data(shared_ptr<T>(data_, destructor))
 	{
 	 	stride = vector<size_t>(ndim, 1);
 		checkDimensionality();
 	}
 
-	Ndarray(SharedPointer<T> data_, vector<size_t> shape_):
+	Ndarray(shared_ptr<T> data_, vector<size_t> shape_):
 		ndim(shape_.size()),
 		shape(shape_),
 		data(data_)
@@ -93,7 +93,7 @@ public:
 		checkDimensionality();
 	}
 
-	Ndarray(SharedPointer<T> data_, vector<size_t> shape_, vector<size_t> stride_):
+	Ndarray(shared_ptr<T> data_, vector<size_t> shape_, vector<size_t> stride_):
 		ndim(shape_.size()),
 		shape(shape_),
 		stride(stride_),
@@ -181,7 +181,7 @@ public:
 	}
 		
 	template<typename U=T, int M=-1>
-	Ndarray<T,N> operator[](Slice slc){
+	Ndarray<U,M> operator[](Slice slc){
 		slc.update(shape[0]);
 		// TODO: implement some sort of check
 		int64_t start = slc.start * stride[0];
@@ -191,11 +191,11 @@ public:
 		newshape[0] = (slc.stop - slc.start) / slc.step;
 		newstride[0] = newstride[0] * slc.step;
 		
-		return Ndarray<T>(data+start, newshape, newstride);
+		return Ndarray<T>(std::shared_ptr<T>(data, data.get()+start), newshape, newstride);
 	}
 
 	template<typename U=T, int M=-1>
-	const Ndarray<T,N> operator[](Slice slc) const{
+	const Ndarray<U,M> operator[](Slice slc) const{
 		return operator[](slc);
 	}
 	
@@ -208,7 +208,7 @@ public:
 			start *= shape[1] * stride[1];
 		}
 		vector<size_t> newshape (&shape[1], &shape[ndim]);
-		return Ndarray<U, M>(data+start, newshape);
+		return Ndarray<U, M>(std::shared_ptr<T>(data, data.get()+start), newshape);
 	}
 
 	template<typename U, int M=-1>
@@ -226,8 +226,8 @@ public:
 		}
 		return 0;
 	}
-};
 
+};
 
 template<typename T>
 ostream& operator<< (ostream& stream, vector<T>shape ) {
