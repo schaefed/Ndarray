@@ -49,11 +49,93 @@ void _deleteNothing(T* pointer){
 }
 
 
+
+template<typename T>
+class DataIterator : public std::iterator<std::forward_iterator_tag,
+										   T,
+										   ptrdiff_t,
+										   T*,
+										   T&>{
+private:
+	T* ptr_;
+	const std::vector<size_t> stride_;
+	const std::vector<size_t> shape_;
+	std::vector<size_t> index_;
+	std::size_t ndim_;
+	
+	T* getPtr() const{
+		return ptr_;
+	}
+
+	const T* getConstPtr() const{
+		return ptr_;
+	}
+
+	std::ptrdiff_t nextIndex(){
+		size_t i = ndim_ - 1;
+		index_[i] += 1;
+		for (i; i--; -1){ 
+			if ((index_[i] == shape_[i]) and (i > 0)){
+				index_[i] = 0;
+				index_[i-1] += 1;
+			} else {
+				break;
+			}
+		}
+		return stride_[i];
+	}
+
+public:
+
+	DataIterator(T* ptr, std::vector<size_t> shape, std::vector<size_t> stride):
+		ptr_(ptr), shape_(shape), stride_(stride){
+		ndim_ = shape_.size();
+		index_ = std::vector<size_t>(ndim_, 0);
+	}
+	
+	DataIterator(const DataIterator<T>& iter) = default; // Maybe I should implement the constructor...
+
+	~DataIterator(){}
+
+	DataIterator<T>& operator=(const DataIterator<T>& iter) = default;
+
+	bool operator==(const DataIterator<T>& iter) const{
+		return (ptr_ == iter.getConstPtr());
+	}
+	bool operator!=(const DataIterator<T>& iter) const{
+		return (ptr_ != iter.getConstPtr());
+	}
+	DataIterator<T>& operator++(){
+		ptr_ += nextIndex();
+		return (*this);
+	}
+	DataIterator<T> operator++(ptrdiff_t){
+		auto temp(*this);
+		ptr_ += nextIndex();
+		return temp;
+	}
+	T& operator*(){
+		return *ptr_;
+	}
+
+	const T& operator*() const{
+		return *ptr_;
+	}
+
+	T* operator->(){
+		// Is a const version needed??
+		return ptr_;
+	}
+
+	// T* last(){
+		
+	// }
+};
+
 template<typename T, int N=-1>
 	class Ndarray {
  
 public:
-
 	std::size_t ndim;
 	std::vector<size_t> shape;
 	std::vector<size_t> stride;
