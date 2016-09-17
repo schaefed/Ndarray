@@ -10,33 +10,34 @@
 
 using namespace std;
 
+// template<typename T>
+// void print(T elem){
+// 	cout << elem << " ";
+// }
+
+// template<typename T>
+// void println(T elem){
+// 	cout << elem << endl;
+// }
+
 class Slice {
 
 private:
-	bool stop_given;
 public:
 	int64_t start;
 	int64_t stop;
 	int64_t step;
-
-	Slice(int64_t start_, int64_t step_=1):
-		stop_given(false),
-		start(start_),
-		stop(1)
-	{}
-
-	Slice(int64_t start_, int64_t stop_, int64_t step_=1 ):
-		stop_given(true),
+	
+	Slice(){};
+	Slice(int64_t start_, int64_t stop_, int64_t step_=1):
 		start(start_),
 		stop(stop_),
 		step(step_)
 	{}
 
-	void update(size_t length){
-		if (not stop_given){
-			stop = length;
-		}
-	}
+	// void update(size_t length){
+	// 	stop = length;
+	// }
 };
 
 template<typename T>
@@ -47,7 +48,6 @@ void _deleteArray(T* pointer){
 template<typename T>
 void _deleteNothing(T* pointer){
 }
-
 
 
 template<typename T>
@@ -72,17 +72,26 @@ private:
 	}
 
 	std::ptrdiff_t nextIndex(){
-		size_t i = ndim_ - 1;
-		index_[i] += 1;
-		for (i; i--; -1){ 
+		// Not correct!
+		size_t out = 0;
+		// int64_t i;
+		// int64_t idx = ndim_ - 1;
+		// index_[idx] += 1;
+		for (int64_t i=ndim_-1; i>=0 ; --i){ 
+		// // 	// cout << "looping\n"; 
 			if ((index_[i] == shape_[i]) and (i > 0)){
+				out += (stride_[i-1] - stride_[i]*shape_[i]);
 				index_[i] = 0;
 				index_[i-1] += 1;
 			} else {
+				out += stride_[i];
 				break;
 			}
+			
 		}
-		return stride_[i];
+		return out;
+		// // cout << "next: " << stride_[i] << endl;
+		// return stride_[i];
 	}
 
 public:
@@ -109,7 +118,12 @@ public:
 		ptr_ += nextIndex();
 		return (*this);
 	}
-	DataIterator<T> operator++(ptrdiff_t){
+	// DataIterator<T> operator++(ptrdiff_t){
+	// 	auto temp(*this);
+	// 	ptr_ += nextIndex();
+	// 	return temp;
+	// }
+	DataIterator<T> operator++(int){
 		auto temp(*this);
 		ptr_ += nextIndex();
 		return temp;
@@ -127,6 +141,11 @@ public:
 		return ptr_;
 	}
 
+	const T* operator->() const{
+		// Is a const version needed??
+		return ptr_;
+	}
+
 	// T* last(){
 		
 	// }
@@ -135,7 +154,21 @@ public:
 template<typename T, int N=-1>
 	class Ndarray {
  
+private:
+
+	vector<size_t> initStrides(){
+		auto strides = vector<size_t>(ndim, 1);
+		for (int i=ndim-2; i>=0 ; --i){
+			strides[i] = shape[i+1] * strides[i+1]; 
+		}
+		return strides;
+	}
+		
 public:
+
+	typedef DataIterator<T>	iterator;
+	typedef DataIterator<const T> const_iterator;
+
 	std::size_t ndim;
 	std::vector<size_t> shape;
 	std::vector<size_t> stride;
@@ -153,7 +186,8 @@ public:
 		shape(shape_),
 		data(shared_ptr<T>(new T[size()], destructor))
 	{
-		stride = vector<size_t>(ndim, 1);
+		// stride = vector<size_t>(ndim, 1);
+		stride = initStrides();
 		checkDimensionality();
 	}
 
@@ -162,7 +196,8 @@ public:
 		shape(shape_),
 		data(shared_ptr<T>(data_, destructor))
 	{
-	 	stride = vector<size_t>(ndim, 1);
+	 	// stride = vector<size_t>(ndim, 1);
+		stride = initStrides();
 		checkDimensionality();
 	}
 
@@ -171,7 +206,8 @@ public:
 		shape(shape_),
 		data(data_)
 	{
-		stride = vector<size_t>(ndim,1);
+		// stride = vector<size_t>(ndim,1);
+		stride = initStrides();
 		checkDimensionality();
 	}
 
@@ -201,7 +237,32 @@ public:
 	{
 		swap(*this, other);
 	}
-			
+
+	iterator begin(){
+		return iterator(&data.get()[0], shape, stride);
+	}
+	iterator end(){
+		// Not correct!
+		size_t idx = 1;
+		for (uint i=0; i<shape.size(); i++){
+			idx *= (shape[i] * stride[i]);
+		}
+		return iterator(&data.get()[idx], shape, stride);
+	}
+
+	const_iterator cbegin(){
+		return iterator(&data.get()[0], shape, stride);
+	}
+	const_iterator cend(){
+		size_t idx = 1;
+		for (uint i=0; i<shape.size(); i++){
+			idx *= (shape[i] * stride[i]);
+		}
+		// cout << "end: " << idx << endl;
+		return iterator(&data.get()[idx], shape, stride);
+	}
+
+	
 	template<typename U, int M=-1>
 	operator Ndarray<U,M>(){
 		/*
@@ -264,16 +325,15 @@ public:
 		
 	template<typename U=T, int M=-1>
 	Ndarray<U,M> operator[](Slice slc){
-		slc.update(shape[0]);
-		// TODO: implement some sort of check
-		int64_t start = slc.start * stride[0];
-
-		vector<size_t> newshape = shape;//(&shape[1],&shape[ndim]);
+		int64_t idx = slc.start * stride[0]; 
+		vector<size_t> newshape = shape;
 		vector<size_t> newstride = stride;
 		newshape[0] = (slc.stop - slc.start) / slc.step;
 		newstride[0] = newstride[0] * slc.step;
-		
-		return Ndarray<T>(std::shared_ptr<T>(data, data.get()+start), newshape, newstride);
+	
+		return Ndarray<T>(std::shared_ptr<T>(data, data.get()+idx),
+						  newshape, newstride
+						  );
 	}
 
 	template<typename U=T, int M=-1>
@@ -285,10 +345,25 @@ public:
 	Ndarray<U,M> operator[](int64_t idx){
 		checkIndex(idx);
 		int64_t start = idx * stride[0];
-		// if more than one dimension we are indexing Ndarrays
-		if (ndim - 1 > 0){
-			start *= shape[1] * stride[1];
-		}
+
+		// if (shape.size() > 1){
+		// 	cout << "in: " << idx << endl;
+		// 	// cout << "ndim: " << start << endl;
+		// 	cout << "start: " << start << endl;
+		// 	// cout << "stride: " << stride[0] << endl;
+		// 	start*=shape[0];
+		// 	cout << "start: " << start << endl;
+		// }
+
+		// cout << "idx: " << idx << endl;
+		// cout << "start: " << start << endl;
+		// cout << "stride[0]: " << stride[0] << endl;
+		// cout << "data: " << data.get()[0] << endl;
+		// // if more than one dimension we are indexing Ndarrays
+		// if (ndim - 1 > 0){
+		// 	// start *= shape[1] * stride[1];
+		// 	start *= shape[1] * stride[1];
+		// }
 		vector<size_t> newshape (&shape[1], &shape[ndim]);
 		return Ndarray<U, M>(std::shared_ptr<T>(data, data.get()+start), newshape);
 	}

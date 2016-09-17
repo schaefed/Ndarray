@@ -39,30 +39,6 @@ void testGetItem(Ndarray<T> &base, vector<T> &compare){
 }
 	
 template<typename T>
-void testGetSlice(Ndarray<T> &base){
-
-	auto checker = [](Ndarray<int64_t> &sliced, Ndarray<int64_t> &base){
-		int64_t start = 0;
-		int64_t stop = base.shape[0];
-		int64_t step = sliced.stride[0];
-		int64_t k = 0;
-		for (auto i : range(start, stop, step)){
-			for (auto j : range(0, base.shape[1], base.stride[1])){
-				assert(sliced[k][j] == base[i][j]); // slicing incorrect!
-			}
-			k++;
-		}
-	};
-	
-	auto sliced1 = base[Slice(0, base.shape[0], 2)];
-	auto sliced2 = sliced1[Slice(0, base.shape[0], 3)];
-	
-	checker(sliced1, base);
-	checker(sliced2, base);
-	checker(sliced2, sliced1);
-}
-
-template<typename T>
 void testAssignment(Ndarray<T> array){
 	assert(array.ndim >= 2); // test array needs to have 2 or more dimensions
 	for (uint64_t i=0 ; i<array.shape[0] ; i++){
@@ -133,17 +109,64 @@ void testStaticDims(Ndarray<T> &array){
 	}catch(DimensionError){}
 } 
 
-int main(){
+void testGetSlice(){
 
+	vector<size_t> shape = {16, 16};
+	vector<int64_t> basevec  = range(0, 16*16);
+	Ndarray<int64_t> array(basevec.data(), shape);
+	Ndarray<int64_t> sliced;
+
+	sliced = array[Slice(0,3)];
+	assert (sliced[0][0] == 0); // Slicing test failed
+	assert (sliced[0][7] == 7); // Slicing test failed
+	assert (sliced[0][15] == 15); // Slicing test failed
+
+	assert (sliced[1][0] == 16); // Slicing test failed
+	assert (sliced[1][7] == 23); // Slicing test failed
+	assert (sliced[1][15] == 31); // Slicing test failed
+	assert (sliced[2][0] == 32); // Slicing test failed
+	assert (sliced[2][7] == 39); // Slicing test failed
+	assert (sliced[2][15] == 47); // Slicing test failed
+
+	sliced = array[0][Slice(1,8)];
+	assert (sliced[0] == 1); // Slicing test failed
+	assert (sliced[1] == 2); // Slicing test failed
+	assert (sliced[4] == 5); // Slicing test failed
+	assert (sliced[6] == 7); // Slicing test failed
+
+	sliced = array[0][Slice(1,11,2)];
+	assert (sliced[0] == 1); // Slicing test failed
+	assert (sliced[1] == 3); // Slicing test failed
+	assert (sliced[4] == 9); // Slicing test failed
+
+	sliced = array[2][Slice(1,11,2)];
+	assert (sliced[0] == 32 + 1); // Slicing test failed
+	assert (sliced[1] == 32 + 3); // Slicing test failed
+	assert (sliced[4] == 32 + 9); // Slicing test failed
+
+}
+
+void testIterator(){
+	vector<size_t> shape = {16, 16};
+	vector<int64_t> basevec  = range(0, 16*16);
+	Ndarray<int64_t> array(basevec.data(), shape);
+
+	for (auto e : array[Slice(1,8,2)]){
+		cout << e << endl;
+	}
+}
+
+int main(){
 
 	vector<size_t> shape = {16, 16};
 	vector<int64_t> basevec  = range(0, 16*16);
 	Ndarray<int64_t> array(basevec.data(), shape);
 
-	testGetSlice(array);
+	testGetSlice();
 	testAssignment(array);
 	testOutOfBounds(array);
 	testStaticDims(array);
+	testIterator();
 	// // testIterator(array);
 	// Ndarray<int64_t,2> dummy(array);
 	return 0;
