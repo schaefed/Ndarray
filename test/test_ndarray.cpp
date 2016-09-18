@@ -151,7 +151,7 @@ void testIterator(){
 	vector<int64_t> basevec  = range(0, 16*16);
 	Ndarray<int64_t> array(basevec.data(), shape);
 
-	for (auto e : array[Slice(1,8,2)]){
+	for (auto e : array[Slice(3,8,2)]){
 		cout << e << endl;
 	}
 }

@@ -164,18 +164,31 @@ private:
 		return strides;
 	}
 		
+	size_t lastIndex() {
+		size_t out = stride[0] * shape[0];
+		uint64_t i;
+		for (i=0; i<ndim; i++){
+			out += (stride[i] * shape[i]);
+		}
+		cout << "lastIndex: " << offset << endl;
+		cout << "lastIndex: " << out + offset - stride[i] << endl;
+		return out + offset - stride[i];
+	}
+		
 public:
 
 	typedef DataIterator<T>	iterator;
 	typedef DataIterator<const T> const_iterator;
 
 	std::size_t ndim;
+	std::size_t offset;
 	std::vector<size_t> shape;
 	std::vector<size_t> stride;
 	std::shared_ptr<T> data;
 
 	Ndarray():
 		ndim(0),
+		offset(0),
 		shape(std::vector<size_t>()),
 		stride(std::vector<size_t>()),
 		data(shared_ptr<T>(nullptr))
@@ -183,6 +196,7 @@ public:
 
 	Ndarray(vector<size_t> shape_, std::function<void(T*)> destructor=_deleteArray<T>):
 		ndim(shape_.size()),
+		offset(0),
 		shape(shape_),
 		data(shared_ptr<T>(new T[size()], destructor))
 	{
@@ -193,6 +207,7 @@ public:
 
 	Ndarray(T* data_, vector<size_t> shape_, std::function<void(T*)> destructor=_deleteNothing<T>):
 		ndim(shape_.size()),
+		offset(0),
 		shape(shape_),
 		data(shared_ptr<T>(data_, destructor))
 	{
@@ -201,8 +216,9 @@ public:
 		checkDimensionality();
 	}
 
-	Ndarray(shared_ptr<T> data_, vector<size_t> shape_):
+	Ndarray(shared_ptr<T> data_, vector<size_t> shape_, size_t offset_=0):
 		ndim(shape_.size()),
+		offset(offset_),
 		shape(shape_),
 		data(data_)
 	{
@@ -211,8 +227,9 @@ public:
 		checkDimensionality();
 	}
 
-	Ndarray(shared_ptr<T> data_, vector<size_t> shape_, vector<size_t> stride_):
+	Ndarray(shared_ptr<T> data_, vector<size_t> shape_, vector<size_t> stride_, size_t offset_=0):
 		ndim(shape_.size()),
+		offset(offset_),
 		shape(shape_),
 		stride(stride_),
 		data(data_)
@@ -242,24 +259,14 @@ public:
 		return iterator(&data.get()[0], shape, stride);
 	}
 	iterator end(){
-		// Not correct!
-		size_t idx = 1;
-		for (uint i=0; i<shape.size(); i++){
-			idx *= (shape[i] * stride[i]);
-		}
-		return iterator(&data.get()[idx], shape, stride);
+		return iterator(&data.get()[lastIndex()], shape, stride);
 	}
 
 	const_iterator cbegin(){
 		return iterator(&data.get()[0], shape, stride);
 	}
 	const_iterator cend(){
-		size_t idx = 1;
-		for (uint i=0; i<shape.size(); i++){
-			idx *= (shape[i] * stride[i]);
-		}
-		// cout << "end: " << idx << endl;
-		return iterator(&data.get()[idx], shape, stride);
+		return iterator(&data.get()[lastIndex()], shape, stride);
 	}
 
 	
@@ -332,7 +339,7 @@ public:
 		newstride[0] = newstride[0] * slc.step;
 	
 		return Ndarray<T>(std::shared_ptr<T>(data, data.get()+idx),
-						  newshape, newstride
+						  newshape, newstride, idx + offset
 						  );
 	}
 
@@ -365,7 +372,9 @@ public:
 		// 	start *= shape[1] * stride[1];
 		// }
 		vector<size_t> newshape (&shape[1], &shape[ndim]);
-		return Ndarray<U, M>(std::shared_ptr<T>(data, data.get()+start), newshape);
+		return Ndarray<U, M>(std::shared_ptr<T>(data, data.get()+start),
+							 newshape, start + offset
+							 );
 	}
 
 	template<typename U, int M=-1>
