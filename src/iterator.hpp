@@ -16,7 +16,6 @@ private:
 	T* ptr_;
 	const vector<size_t> stride_;
 	const vector<size_t> shape_;
-	// vector<size_t> index_;
 	size_t index_;
 	size_t ndim_;
 	
@@ -48,7 +47,6 @@ private:
 		}
 
 		return out;
-		
 	}
 	
 	size_t nextIndex(){
@@ -64,6 +62,15 @@ private:
 		return offsets[i];
 	}
 
+	// size_t lastIndex() {
+	// 	size_t out = 0;
+	// 	auto offsets = strideOffset();
+	// 	for (auto i=0; i<ndim; i++){
+	// 		out += (offsets[i] * (shape_[i]-1));
+	// 	}
+	// 	return out;
+	// }
+	
 public:
 
 	DataIterator(T* ptr, vector<size_t> shape, vector<size_t> stride):

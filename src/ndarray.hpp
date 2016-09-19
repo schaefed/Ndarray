@@ -26,7 +26,37 @@ private:
 		}
 		return strides;
 	}
+
+	// vector<size_t> strideOffset(){
+
+	// 	// most likely not the most efficient way to handle this.
+	// 	// The loop should be replaced by Ndarray calculations one day...
+	// 	// cout << "entered strideOffset()\n";
+
+	// 	auto tmp = vector<size_t>(ndim, 0);
+	// 	for (int64_t i=ndim-1; i>=0; --i){
+	// 		tmp[i] = stride[i] * (shape[i]-1);
+	// 		if (i < ndim-1){
+	// 			tmp[i] += tmp[i+1];
+	// 		}
+	// 	}
+
+	// 	auto out = stride;
+	// 	for (int64_t i=ndim-1; i>0; --i){
+	// 		out[i-1] = stride[i-1] - tmp[i];
+	// 	}
+
+	// 	return out;
+	// }
 		
+	// size_t lastIndex() {
+	// 	size_t out = 0;
+	// 	auto offsets = strideOffset();
+	// 	for (auto i=0; i<ndim; i++){
+	// 		out += (offsets[i] * (shape[i]-1));
+	// 	}
+	// 	return out;
+	// }
 	size_t lastIndex() {
 		// That's probably not the most efficient way...
 		size_t out = stride[0] * shape[0];
@@ -194,14 +224,14 @@ public:
 		
 	template<typename U=T, int M=-1>
 	Ndarray<U,M> operator[](Slice slc){
-		int64_t idx = slc.start * stride[0]; 
+		int64_t start = slc.start * stride[0]; 
 		vector<size_t> newshape = shape;
 		vector<size_t> newstride = stride;
 		newshape[0] = ceil((slc.stop - slc.start) / static_cast<double>(slc.step));
 		newstride[0] = newstride[0] * slc.step;
 	
-		return Ndarray<T>(shared_ptr<T>(data, data.get()+idx),
-						  newshape, newstride, idx + offset
+		return Ndarray<T>(shared_ptr<T>(data, data.get()+start),
+						  newshape, newstride, start + offset // is start+data accesibly from the smart pointer?
 						  );
 	}
 
@@ -214,7 +244,6 @@ public:
 	Ndarray<U,M> operator[](int64_t idx){
 		checkIndex(idx);
 		int64_t start = idx * stride[0];
-
 		vector<size_t> newshape (&shape[1], &shape[ndim]);
 		return Ndarray<U, M>(shared_ptr<T>(data, data.get()+start),
 							 newshape, start + offset

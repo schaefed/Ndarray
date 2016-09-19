@@ -152,9 +152,9 @@ void testIterator(){
 	Ndarray<int64_t> array(basevec.data(), shape);
 	
 	cout << array[Slice(3,8,2)].shape << endl;
-// 	for (auto e : array[Slice(3,8,2)]){
-// 		cout << e << endl;
-// 	}
+	for (auto e : array[Slice(3,8,2)]){
+		cout << e << endl;
+	}
 }
 
 int main(){
