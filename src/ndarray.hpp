@@ -5,6 +5,7 @@
 #include <vector>
 #include <functional>
 #include <memory>
+#include <math.h>
 
 #include "utils.hpp"
 #include "slice.hpp"
@@ -33,8 +34,6 @@ private:
 		for (i=0; i<ndim; i++){
 			out += (stride[i] * shape[i]);
 		}
-		// cout << "lastIndex: " << offset << endl;
-		// cout << "lastIndex: " << out + offset - stride[i] << endl;
 		return out + offset - stride[i];
 	}
 		
@@ -198,7 +197,7 @@ public:
 		int64_t idx = slc.start * stride[0]; 
 		vector<size_t> newshape = shape;
 		vector<size_t> newstride = stride;
-		newshape[0] = (slc.stop - slc.start) / slc.step;
+		newshape[0] = ceil((slc.stop - slc.start) / static_cast<double>(slc.step));
 		newstride[0] = newstride[0] * slc.step;
 	
 		return Ndarray<T>(shared_ptr<T>(data, data.get()+idx),
