@@ -6,154 +6,16 @@
 #include <functional>
 #include <memory>
 
+#include "utils.hpp"
+#include "slice.hpp"
+#include "iterator.hpp"
 #include "exceptions.hpp"
 
 using namespace std;
 
-// template<typename T>
-// void print(T elem){
-// 	cout << elem << " ";
-// }
-
-// template<typename T>
-// void println(T elem){
-// 	cout << elem << endl;
-// }
-
-class Slice {
-
-private:
-public:
-	int64_t start;
-	int64_t stop;
-	int64_t step;
-	
-	Slice(){};
-	Slice(int64_t start_, int64_t stop_, int64_t step_=1):
-		start(start_),
-		stop(stop_),
-		step(step_)
-	{}
-
-	// void update(size_t length){
-	// 	stop = length;
-	// }
-};
-
-template<typename T>
-void _deleteArray(T* pointer){
-	delete[] pointer;
-}
-
-template<typename T>
-void _deleteNothing(T* pointer){
-}
-
-
-template<typename T>
-class DataIterator : public std::iterator<std::forward_iterator_tag,
-										   T,
-										   ptrdiff_t,
-										   T*,
-										   T&>{
-private:
-	T* ptr_;
-	const std::vector<size_t> stride_;
-	const std::vector<size_t> shape_;
-	std::vector<size_t> index_;
-	std::size_t ndim_;
-	
-	T* getPtr() const{
-		return ptr_;
-	}
-
-	const T* getConstPtr() const{
-		return ptr_;
-	}
-
-	std::ptrdiff_t nextIndex(){
-		// Not correct!
-		size_t out = 0;
-		// int64_t i;
-		// int64_t idx = ndim_ - 1;
-		// index_[idx] += 1;
-		for (int64_t i=ndim_-1; i>=0 ; --i){ 
-		// // 	// cout << "looping\n"; 
-			if ((index_[i] == shape_[i]) and (i > 0)){
-				out += (stride_[i-1] - stride_[i]*shape_[i]);
-				index_[i] = 0;
-				index_[i-1] += 1;
-			} else {
-				out += stride_[i];
-				break;
-			}
-			
-		}
-		return out;
-		// // cout << "next: " << stride_[i] << endl;
-		// return stride_[i];
-	}
-
-public:
-
-	DataIterator(T* ptr, std::vector<size_t> shape, std::vector<size_t> stride):
-		ptr_(ptr), shape_(shape), stride_(stride){
-		ndim_ = shape_.size();
-		index_ = std::vector<size_t>(ndim_, 0);
-	}
-	
-	DataIterator(const DataIterator<T>& iter) = default; // Maybe I should implement the constructor...
-
-	~DataIterator(){}
-
-	DataIterator<T>& operator=(const DataIterator<T>& iter) = default;
-
-	bool operator==(const DataIterator<T>& iter) const{
-		return (ptr_ == iter.getConstPtr());
-	}
-	bool operator!=(const DataIterator<T>& iter) const{
-		return (ptr_ != iter.getConstPtr());
-	}
-	DataIterator<T>& operator++(){
-		ptr_ += nextIndex();
-		return (*this);
-	}
-	// DataIterator<T> operator++(ptrdiff_t){
-	// 	auto temp(*this);
-	// 	ptr_ += nextIndex();
-	// 	return temp;
-	// }
-	DataIterator<T> operator++(int){
-		auto temp(*this);
-		ptr_ += nextIndex();
-		return temp;
-	}
-	T& operator*(){
-		return *ptr_;
-	}
-
-	const T& operator*() const{
-		return *ptr_;
-	}
-
-	T* operator->(){
-		// Is a const version needed??
-		return ptr_;
-	}
-
-	const T* operator->() const{
-		// Is a const version needed??
-		return ptr_;
-	}
-
-	// T* last(){
-		
-	// }
-};
-
 template<typename T, int N=-1>
 	class Ndarray {
- 
+
 private:
 
 	vector<size_t> initStrides(){
@@ -165,13 +27,14 @@ private:
 	}
 		
 	size_t lastIndex() {
+		// That's probably not the most efficient way...
 		size_t out = stride[0] * shape[0];
 		uint64_t i;
 		for (i=0; i<ndim; i++){
 			out += (stride[i] * shape[i]);
 		}
-		cout << "lastIndex: " << offset << endl;
-		cout << "lastIndex: " << out + offset - stride[i] << endl;
+		// cout << "lastIndex: " << offset << endl;
+		// cout << "lastIndex: " << out + offset - stride[i] << endl;
 		return out + offset - stride[i];
 	}
 		
@@ -180,21 +43,21 @@ public:
 	typedef DataIterator<T>	iterator;
 	typedef DataIterator<const T> const_iterator;
 
-	std::size_t ndim;
-	std::size_t offset;
-	std::vector<size_t> shape;
-	std::vector<size_t> stride;
-	std::shared_ptr<T> data;
+	size_t ndim;
+	size_t offset;
+	vector<size_t> shape;
+	vector<size_t> stride;
+	shared_ptr<T> data;
 
 	Ndarray():
 		ndim(0),
 		offset(0),
-		shape(std::vector<size_t>()),
-		stride(std::vector<size_t>()),
+		shape(vector<size_t>()),
+		stride(vector<size_t>()),
 		data(shared_ptr<T>(nullptr))
 		{}
 
-	Ndarray(vector<size_t> shape_, std::function<void(T*)> destructor=_deleteArray<T>):
+	Ndarray(vector<size_t> shape_, function<void(T*)> destructor=_deleteArray<T>):
 		ndim(shape_.size()),
 		offset(0),
 		shape(shape_),
@@ -205,7 +68,7 @@ public:
 		checkDimensionality();
 	}
 
-	Ndarray(T* data_, vector<size_t> shape_, std::function<void(T*)> destructor=_deleteNothing<T>):
+	Ndarray(T* data_, vector<size_t> shape_, function<void(T*)> destructor=_deleteNothing<T>):
 		ndim(shape_.size()),
 		offset(0),
 		shape(shape_),
@@ -338,7 +201,7 @@ public:
 		newshape[0] = (slc.stop - slc.start) / slc.step;
 		newstride[0] = newstride[0] * slc.step;
 	
-		return Ndarray<T>(std::shared_ptr<T>(data, data.get()+idx),
+		return Ndarray<T>(shared_ptr<T>(data, data.get()+idx),
 						  newshape, newstride, idx + offset
 						  );
 	}
@@ -353,26 +216,8 @@ public:
 		checkIndex(idx);
 		int64_t start = idx * stride[0];
 
-		// if (shape.size() > 1){
-		// 	cout << "in: " << idx << endl;
-		// 	// cout << "ndim: " << start << endl;
-		// 	cout << "start: " << start << endl;
-		// 	// cout << "stride: " << stride[0] << endl;
-		// 	start*=shape[0];
-		// 	cout << "start: " << start << endl;
-		// }
-
-		// cout << "idx: " << idx << endl;
-		// cout << "start: " << start << endl;
-		// cout << "stride[0]: " << stride[0] << endl;
-		// cout << "data: " << data.get()[0] << endl;
-		// // if more than one dimension we are indexing Ndarrays
-		// if (ndim - 1 > 0){
-		// 	// start *= shape[1] * stride[1];
-		// 	start *= shape[1] * stride[1];
-		// }
 		vector<size_t> newshape (&shape[1], &shape[ndim]);
-		return Ndarray<U, M>(std::shared_ptr<T>(data, data.get()+start),
+		return Ndarray<U, M>(shared_ptr<T>(data, data.get()+start),
 							 newshape, start + offset
 							 );
 	}
@@ -394,19 +239,6 @@ public:
 	}
 
 };
-
-template<typename T>
-ostream& operator<< (ostream& stream, vector<T>shape ) {
-	stream << '(';
-	for (size_t i = 0; i < shape.size() ; i++){
-		stream << shape[i];
-		if (i < shape.size() - 1){
-			stream << ", ";
-		}
-	}
-	stream << ')';
-	return stream;
-}
 
 #endif /* NDARRAY_H */
 

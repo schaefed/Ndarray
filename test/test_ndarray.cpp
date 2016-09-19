@@ -150,7 +150,8 @@ void testIterator(){
 	vector<size_t> shape = {16, 16};
 	vector<int64_t> basevec  = range(0, 16*16);
 	Ndarray<int64_t> array(basevec.data(), shape);
-
+	
+	cout << array[Slice(3,8,2)].shape << endl;
 	for (auto e : array[Slice(3,8,2)]){
 		cout << e << endl;
 	}
@@ -167,7 +168,6 @@ int main(){
 	testOutOfBounds(array);
 	testStaticDims(array);
 	testIterator();
-	// // testIterator(array);
-	// Ndarray<int64_t,2> dummy(array);
+
 	return 0;
 }
