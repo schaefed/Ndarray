@@ -117,6 +117,10 @@ void testGetSlice(){
 	Ndarray<int64_t> sliced;
 
 	sliced = array[Slice(0,3)];
+	assert (sliced.ndim == 2); // Slicing return wrong dimensionality
+	assert (sliced.shape.size() == 2); // Slicing return wrong shape
+	assert (sliced.shape[0] == 3); // Slicing return wrong shape
+	assert (sliced.shape[1] == 16); // Slicing return wrong shape
 	assert (sliced[0][0] == 0); // Slicing test failed
 	assert (sliced[0][7] == 7); // Slicing test failed
 	assert (sliced[0][15] == 15); // Slicing test failed
@@ -129,32 +133,70 @@ void testGetSlice(){
 	assert (sliced[2][15] == 47); // Slicing test failed
 
 	sliced = array[0][Slice(1,8)];
+	assert (sliced.ndim == 1); // Slicing return wrong dimensionality
+	assert (sliced.shape.size() == 1); // Slicing return wrong shape
+	assert (sliced.shape[0] == 7); // Slicing return wrong shape
 	assert (sliced[0] == 1); // Slicing test failed
 	assert (sliced[1] == 2); // Slicing test failed
 	assert (sliced[4] == 5); // Slicing test failed
 	assert (sliced[6] == 7); // Slicing test failed
 
 	sliced = array[0][Slice(1,11,2)];
+	assert (sliced.ndim == 1); // Slicing return wrong dimensionality
+	assert (sliced.shape.size() == 1); // Slicing return wrong shape
+	assert (sliced.shape[0] == 5); // Slicing return wrong shape
 	assert (sliced[0] == 1); // Slicing test failed
 	assert (sliced[1] == 3); // Slicing test failed
 	assert (sliced[4] == 9); // Slicing test failed
 
 	sliced = array[2][Slice(1,11,2)];
-	assert (sliced[0] == 32 + 1); // Slicing test failed
+	assert (sliced.ndim == 1); // Slicing return wrong dimensionality
+	assert (sliced.shape.size() == 1); // Slicing return wrong shape
+	assert (sliced.shape[0] == 5); // Slicing return wrong shape
+	assert (sliced[0] == 32 + 1); // Slicing test faile	assert (sliced.ndim == 1); // Slicing return wrong dimensionality
 	assert (sliced[1] == 32 + 3); // Slicing test failed
 	assert (sliced[4] == 32 + 9); // Slicing test failed
 
+	// This is not implemented yet
+	// sliced = array[Slice(1,11,2)][Slice(1,11,2)];
+	// assert (sliced.ndim == 2); // Slicing return wrong dimensionality
+	// assert (sliced.shape.size() == 2); // Slicing return wrong shape
+	// cout << sliced.shape << endl;
+	// assert (sliced.shape[0] == 5); // Slicing return wrong shape
+	// assert (sliced.shape[1] == 5); // Slicing return wrong shape
+	
 }
 
 void testIterator(){
-	vector<size_t> shape = {16, 16};
-	vector<int64_t> basevec  = range(0, 16*16);
+	// vector<size_t> shape = {16, 16};
+	// vector<int64_t> basevec  = range(0, 16*16);
+	vector<size_t> shape = {4, 4};
+	vector<int64_t> basevec  = range(0, 4*4);
 	Ndarray<int64_t> array(basevec.data(), shape);
-	
-	cout << array[Slice(3,8,2)].shape << endl;
-	for (auto e : array[Slice(3,8,2)]){
-		cout << e << endl;
+	// cout << "offset: " << array.indexer.getOffset() << endl;
+	// auto test = array[Slice(0,4,2)];
+	auto test = array[Slice(0,2,1)];
+	// auto test = array;
+	cout << "strides:  "<< test.strider.getStrides() << endl;
+	cout << "last index: " << test.indexer.lastIndex() << endl;
+	// cout << test.shape << endl;
+	// cout << test[0][0] << endl;
+	// cout << test[0][1] << endl;
+	// cout << test[0][2] << endl;
+	// cout << test[0][3] << endl;
+	// cout << test[1][0] << endl;
+	// cout << test[1][1] << endl;
+	// cout << test[1][2] << endl;
+	// cout << test[1][3] << endl;
+	for (auto e: test){
+		cout << "iter: " << e << endl;
 	}
+	// cout << array[Slice(0,4,2)][Slice(0,4,2)].indexer.lastIndex() << endl;
+	// cout << array[Slice(3,8,2)].indexer.lastIndex() << endl;
+	// cout << array[Slice(3,8,2)].shape << endl;
+	// for (auto e : array[Slice(0,6,2)]){
+	// 	cout << e << endl;
+	// }
 }
 
 int main(){

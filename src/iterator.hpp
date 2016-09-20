@@ -38,12 +38,27 @@ public:
 
 	~DataIterator(){}
 
+
+	void swap(DataIterator<T>& other) noexcept
+	{
+		swap(ptr_, other.ptr_);
+		swap(shape_, other.shape_);
+		swap(indexer_, other.indexer_);
+	}
+
 	DataIterator<T>& operator=(const DataIterator<T>& iter) = default;
 
 	bool operator==(const DataIterator<T>& iter) const{
+
+		cout << "index: " << indexer_.index_ << endl;
+		cout << "==" << ptr_ == iter.getConstPtr() << endl;
 		return (ptr_ == iter.getConstPtr());
 	}
 	bool operator!=(const DataIterator<T>& iter) const{
+		// cout << "index: " << indexer_.index_ << endl;
+		// cout << "!=: " << (ptr_ != iter.getConstPtr()) << endl;
+		// cout << "!=: " << ptr_ << " <-> " << iter.getConstPtr() << endl;
+		// cout << "!=: " << *ptr_ << " <-> " << *iter.getConstPtr() << endl;
 		return (ptr_ != iter.getConstPtr());
 	}
 	DataIterator<T>& operator++(){

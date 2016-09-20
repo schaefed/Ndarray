@@ -50,10 +50,12 @@ def indexDimension(array, idx):
 
 if __name__== "__main__":
 
-    shape = (16, 16)
+    shape = (4, 4)
     x = np.arange(np.prod(shape)).reshape(shape)
-    print x[slice(3,8,2)]
-    # print elementOffset(x[::2, ::2,::2])
+    print arrayStrides(x[slice(0,4,2)])
+    print x[slice(0,4,2)]
+    print x
+    # print elementOffset(x[::2,::2])
     # print elementOffsetImplement(x[::2, ::2,::2])
     # for i in xrange(10):
     #     y = indexDimension(x,i+1)

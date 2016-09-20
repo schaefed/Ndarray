@@ -111,6 +111,8 @@ public:
 		return iterator(&data.get()[0], indexer);
 	}
 	iterator end(){
+		// cout << "end" << endl;
+		// cout << "end->last: " << data.get()[indexer.lastIndex()] << endl;
 		return iterator(&data.get()[indexer.lastIndex()], indexer);
 	}
 
@@ -118,6 +120,7 @@ public:
 		return iterator(&data.get()[0], indexer);
 	}
 	const_iterator cend(){
+		// cout << "cend" << endl;
 		return iterator(&data.get()[indexer.lastIndex()], indexer);
 	}
 
@@ -222,6 +225,7 @@ public:
 	template<typename U, int M=-1>
 	const Ndarray<U,M> operator[](int64_t idx) const{
 		return operator[](idx);
+
 	}
 
 	size_t size(){

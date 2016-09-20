@@ -73,21 +73,15 @@ private:
 	vector<size_t> shape_;
 	Strider strides_;
 	size_t offset_;
-	size_t index_;
 	size_t ndim_;
 
 public:
 
+	size_t index_;
+
 	size_t lastIndex() {
-		// That's probably not the most efficient way...
 		auto strides = strides_.getStrides();
-		auto offsets = strides_.getOffsets();
-		auto out = strides[0] * shape_[0];
-		uint64_t i;
-		for (i=0; i<ndim_; i++){
-			out += (strides[i] * shape_[i]);
-		}
-		return out + offset_ - strides[i];
+		return strides[0] * shape_[0];
 	}
 
 	size_t nextIndex(){
@@ -110,6 +104,7 @@ public:
 		shape_(shape), strides_(strides), offset_(offset), index_(index){
 		ndim_ = shape.size();
 	}
+
 	Indexer(){}
 
 	size_t getOffset(){
