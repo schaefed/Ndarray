@@ -15,97 +15,86 @@
 
 using namespace std;
 
-template<typename T, int N=-1>
-	class Ndarray {
-
+template<typename T, int N=-1> class Ndarray {
+		
 private:
 
-	vector<size_t> initStrides(){
-		auto strides = vector<size_t>(ndim, 1);
-		for (int i=ndim-2; i>=0 ; --i){
-			strides[i] = shape[i+1] * strides[i+1]; 
-		}
-		return strides;
-	}
-
-	size_t lastIndex() {
-		// That's probably not the most efficient way...
-		size_t out = stride[0] * shape[0];
-		uint64_t i;
-		for (i=0; i<ndim; i++){
-			out += (stride[i] * shape[i]);
-		}
-		return out + offset - stride[i];
-	}
-		
 public:
-
+	
 	typedef DataIterator<T>	iterator;
 	typedef DataIterator<const T> const_iterator;
-
+	
 	size_t ndim;
-	size_t offset;
 	vector<size_t> shape;
-	vector<size_t> stride;
 	shared_ptr<T> data;
+	Strider strider;
+	Indexer indexer;
+	// vector<size_t> stride;
 
 	Ndarray():
 		ndim(0),
-		offset(0),
 		shape(vector<size_t>()),
-		stride(vector<size_t>()),
 		data(shared_ptr<T>(nullptr))
 		{}
 
 	Ndarray(vector<size_t> shape_, function<void(T*)> destructor=_deleteArray<T>):
 		ndim(shape_.size()),
-		offset(0),
 		shape(shape_),
 		data(shared_ptr<T>(new T[size()], destructor))
 	{
-		// stride = vector<size_t>(ndim, 1);
-		stride = initStrides();
+		strider = Strider(shape);
+		indexer = Indexer(shape, strider);
 		checkDimensionality();
 	}
 
 	Ndarray(T* data_, vector<size_t> shape_, function<void(T*)> destructor=_deleteNothing<T>):
 		ndim(shape_.size()),
-		offset(0),
 		shape(shape_),
 		data(shared_ptr<T>(data_, destructor))
 	{
-	 	// stride = vector<size_t>(ndim, 1);
-		stride = initStrides();
+		strider = Strider(shape_);
+		indexer = Indexer(shape, strider);
 		checkDimensionality();
 	}
 
-	Ndarray(shared_ptr<T> data_, vector<size_t> shape_, size_t offset_=0):
+	Ndarray(shared_ptr<T> data_, vector<size_t> shape_, size_t offset=0):
 		ndim(shape_.size()),
-		offset(offset_),
 		shape(shape_),
 		data(data_)
 	{
-		// stride = vector<size_t>(ndim,1);
-		stride = initStrides();
+		strider = Strider(shape);
+		indexer = Indexer(shape, strider, offset);
 		checkDimensionality();
 	}
 
-	Ndarray(shared_ptr<T> data_, vector<size_t> shape_, vector<size_t> stride_, size_t offset_=0):
+
+	Ndarray(shared_ptr<T> data_, vector<size_t> shape_, vector<size_t> stride_, size_t offset=0):
 		ndim(shape_.size()),
-		offset(offset_),
 		shape(shape_),
-		stride(stride_),
 		data(data_)
+	{
+		strider = Strider(shape, stride_);
+		indexer = Indexer(shape, strider, offset);
+		checkDimensionality();
+	}
+
+	Ndarray(shared_ptr<T> data_, vector<size_t> shape_, Strider strider_, Indexer indexer_):
+		ndim(shape_.size()),
+		shape(shape_),
+		data(data_),
+		strider(strider_),
+		indexer(indexer_)
 	{
 		checkDimensionality();
 	}
-	
+
 	Ndarray(const Ndarray<T,N>& other):
 		/* copy constructor */
 		ndim(other.ndim),
 		shape(other.shape),
-		stride(other.stride),
-		data(other.data)
+		data(other.data),
+		strider(other.strider),
+		indexer(other.indexer)
 	{
 		checkDimensionality();
 	}
@@ -119,17 +108,17 @@ public:
 	}
 
 	iterator begin(){
-		return iterator(&data.get()[0], shape, stride);
+		return iterator(&data.get()[0], indexer);
 	}
 	iterator end(){
-		return iterator(&data.get()[lastIndex()], shape, stride);
+		return iterator(&data.get()[indexer.lastIndex()], indexer);
 	}
 
 	const_iterator cbegin(){
-		return iterator(&data.get()[0], shape, stride);
+		return iterator(&data.get()[0], indexer);
 	}
 	const_iterator cend(){
-		return iterator(&data.get()[lastIndex()], shape, stride);
+		return iterator(&data.get()[indexer.lastIndex()], indexer);
 	}
 
 	
@@ -140,7 +129,10 @@ public:
 		  1. Ndarray<T>   -> Ndarray<T,N>
 		  2. Ndarray<T,N> -> Ndarray<T>
 		 */
-		return Ndarray<U,M>(this->data, this->shape, this->stride);
+		return Ndarray<U,M>(this->data,
+							this->shape,
+							this->strider,
+							this->indexer);
 	}
 	
 		
@@ -172,8 +164,9 @@ public:
 	friend void swap(Ndarray<T,N>& first, Ndarray<T,N>& second){
 		swap(first.ndim, second.ndim);
 		swap(first.shape, second.shape);
-		swap(first.stride, second.stride);
 		swap(first.data, second.data);		
+		swap(first.strider, second.strider);
+		swap(first.indexer, second.indexer);
 	}
 
 	void checkIndex(uint64_t idx){
@@ -195,14 +188,17 @@ public:
 		
 	template<typename U=T, int M=-1>
 	Ndarray<U,M> operator[](Slice slc){
-		int64_t start = slc.start * stride[0]; 
-		vector<size_t> newshape = shape;
-		vector<size_t> newstride = stride;
+		auto newshape = shape;
+		auto newstrides = strider.getStrides();
+		// cout << "strides: "<< strider.getStrides() << endl;
+		// cout << "shape: " << shape << endl;
+		int64_t start = slc.start * newstrides[0]; 
 		newshape[0] = ceil((slc.stop - slc.start) / static_cast<double>(slc.step));
-		newstride[0] = newstride[0] * slc.step;
-	
+		newstrides[0] = newstrides[0] * slc.step;
+		// cout << "newstrides: "<< newstrides << endl;
+		// cout << "newshape: " << newshape << endl;
 		return Ndarray<T>(shared_ptr<T>(data, data.get()+start),
-						  newshape, newstride, start + offset // is start+data accesibly from the smart pointer?
+						  newshape, newstrides, start + indexer.getOffset() // is start+data accesibly from the smart pointer?
 						  );
 	}
 
@@ -214,10 +210,12 @@ public:
 	template<typename U=T, int M=-1>
 	Ndarray<U,M> operator[](int64_t idx){
 		checkIndex(idx);
-		int64_t start = idx * stride[0];
+		auto strides = strider.getStrides();
 		vector<size_t> newshape (&shape[1], &shape[ndim]);
+		int64_t start = idx * strides[0];
+		// vector<size_t> newshape (&shape[1], &shape[ndim]);
 		return Ndarray<U, M>(shared_ptr<T>(data, data.get()+start),
-							 newshape, start + offset
+							 newshape, start + indexer.getOffset()
 							 );
 	}
 
