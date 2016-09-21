@@ -27,4 +27,18 @@ ostream& operator<< (ostream& stream, vector<T>shape ) {
 	return stream;
 }
 
+vector<int64_t> range(int64_t start, int64_t stop, int64_t step=1){
+
+	if ((start > stop) and (step > 0)){
+		start = stop;
+	}
+
+	int64_t i = 0;
+	vector<int64_t> out((stop-start)/step);
+	for (int64_t x=start ; x < stop ; x = x + step){
+		out[i++] = x;
+	}
+	return out;
+}
+
 #endif /* UTILS_H */

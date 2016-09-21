@@ -2,28 +2,20 @@
 #define ITERATOR_H
 
 #include <vector>
-#include <valarray>
 
 using namespace std;
 
 template<typename T>
-class DataIterator : public iterator<forward_iterator_tag,
-									 T,
-									 ptrdiff_t,
-									 T*,
-									 T&>{
+class DataIterator : public iterator<forward_iterator_tag, T, ptrdiff_t, T*, T&>{
+
 private:
 	T* ptr;
 	size_t index;
-	const vector<size_t> shape;
-	const vector<size_t> strides;
+	const vector<size_t> &shape;
+	const vector<size_t> &strides;
 	
-	const T* getConstPtr() const{
-		return ptr;
-	}
-
 	size_t nextIndex(){
-
+		// is there a less complex solution?
 		index++;
 		auto idx = index;
 		auto i = shape.size()-1;
@@ -36,61 +28,46 @@ private:
 		return strides[i] - accum;
 	}
 
-
 public:
 
-	DataIterator(T* ptr_, vector<size_t> shape_, vector<size_t> strides_):
+	DataIterator(T* ptr_, const vector<size_t> &shape_, const vector<size_t> &strides_):
 		ptr(ptr_), index(0), shape(shape_), strides(strides_){
 	}
 	
-	DataIterator(const DataIterator<T>& iter) = default; // Maybe I should implement the constructor...
-
-	~DataIterator(){}
-
-
-	// void swap(DataIterator<T>& other) noexcept
-	// {
-	// 	swap(ptr_, other.ptr_);
-	// 	swap(shape_, other.shape_);
-	// 	swap(indexer_, other.indexer_);
-	// }
-
-	DataIterator<T>& operator=(const DataIterator<T>& iter) = default;
-
-	bool operator==(const DataIterator<T>& iter) const{
-		return (ptr == iter.getConstPtr());
+	bool operator==(const DataIterator<T>& iter) const {
+		return (ptr == iter.ptr);
 	}
-	bool operator!=(const DataIterator<T>& iter) const{
-		return (ptr != iter.getConstPtr());
+
+	bool operator!=(const DataIterator<T>& iter) const {
+		return (ptr != iter.ptr);
 	}
+
 	DataIterator<T>& operator++(){
 		ptr += nextIndex();
 		return (*this);
 	}
 
-	DataIterator<T> operator++(int){
-		auto temp(*this);
+	DataIterator<T> operator++(const int){
+		auto out(*this);
 		ptr += nextIndex();
-		return temp;
+		return out;
 	}
+
 	T& operator*(){
 		return *ptr;
+	}
+
+	T* operator->(){
+		return ptr;
 	}
 
 	const T& operator*() const{
 		return *ptr;
 	}
 
-	T* operator->(){
-		// Is a const version needed??
-		return ptr;
-	}
-
 	const T* operator->() const{
-		// Is a const version needed??
 		return ptr;
 	}
-
 };
 
 #endif /* ITERATOR_H */

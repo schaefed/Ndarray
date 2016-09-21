@@ -7,24 +7,6 @@
 
 #include "ndarray.hpp"
 
-// template<typename T>
-// void testIterator(Ndarray<T> &base){
-// }
-
-vector<int64_t> range(int64_t start, int64_t stop, int64_t step=1){
-	if (stop <= start){
-		// should be something nicer...
-		throw range_error("stop >= step");
-	}
-	
-	int64_t i = 0;
-	vector<int64_t> out((stop-start)/step);
-	for (int64_t x=start ; x < stop ; x = x + step){
-		out[i++] = x;
-	}
-	return out;
-}
-
 template<typename T>
 void testGetItem(Ndarray<T> &base, vector<T> &compare){
 
@@ -170,24 +152,16 @@ void testGetSlice(){
 void testIterator(){
 	// vector<size_t> shape = {16, 16};
 	// vector<int64_t> basevec  = range(0, 16*16);
-	vector<size_t> shape = {4, 4};
-	vector<int64_t> basevec  = range(0, 4*4);
+	vector<size_t> shape = {8, 8};
+	vector<int64_t> basevec  = range(0, 8*8);
 	Ndarray<int64_t> array(basevec.data(), shape);
+	Ndarray<int64_t> test;
 	// cout << "offset: " << array.indexer.getOffset() << endl;
 	// auto test = array[Slice(0,4,2)];
 	// auto test = array[Slice(0,2,1)];
-	auto test = array;
-	// cout << test.shape << endl;
-	// cout << test[0][0] << endl;
-	// cout << test[0][1] << endl;
-	// cout << test[0][2] << endl;
-	// cout << test[0][3] << endl;
-	// cout << test[1][0] << endl;
-	// cout << test[1][1] << endl;
-	// cout << test[1][2] << endl;
-	// cout << test[1][3] << endl;
+	test = array;
 	for (auto e: test){
-		cout << "iter: " << e << endl;
+		// cout << "iter: " << e << endl;
 	}
 	// cout << array[Slice(0,4,2)][Slice(0,4,2)].indexer.lastIndex() << endl;
 	// cout << array[Slice(3,8,2)].indexer.lastIndex() << endl;
@@ -202,7 +176,7 @@ int main(){
 	vector<size_t> shape = {16, 16};
 	vector<int64_t> basevec  = range(0, 16*16);
 	Ndarray<int64_t> array(basevec.data(), shape);
-
+	
 	testGetSlice();
 	testAssignment(array);
 	testOutOfBounds(array);
