@@ -40,7 +40,7 @@ private:
 public:
 
 	DataIterator(T* ptr_, vector<size_t> shape_, vector<size_t> strides_):
-		index(0), ptr(ptr_), shape(shape_), strides(strides_){
+		ptr(ptr_), index(0), shape(shape_), strides(strides_){
 	}
 	
 	DataIterator(const DataIterator<T>& iter) = default; // Maybe I should implement the constructor...

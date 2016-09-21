@@ -33,22 +33,23 @@ public:
 	
 	size_t ndim;
 	size_t offset;
-	vector<size_t> shape;
 	shared_ptr<T> data;
+	vector<size_t> shape;
 	vector<size_t> strides;
 
 	Ndarray():
 		ndim(0),
 		offset(0),
+		data(shared_ptr<T>(nullptr)),
 		shape(vector<size_t>()),
-		data(shared_ptr<T>(nullptr))
+		strides(vector<size_t>())
 		{}
 
 	Ndarray(vector<size_t> shape_, function<void(T*)> destructor=_deleteArray<T>):
 		ndim(shape_.size()),
 		offset(0),
-		shape(shape_),
-		data(shared_ptr<T>(new T[size()], destructor))
+		data(shared_ptr<T>(new T[size()], destructor)),
+		shape(shape_)
 	{
 		strides = calcStrides();
 		checkDimensionality();
@@ -57,8 +58,8 @@ public:
 	Ndarray(T* data_, vector<size_t> shape_, function<void(T*)> destructor=_deleteNothing<T>):
 		ndim(shape_.size()),
 		offset(0),
-		shape(shape_),
-		data(shared_ptr<T>(data_, destructor))
+		data(shared_ptr<T>(data_, destructor)),
+		shape(shape_)
 	{
 		strides = calcStrides();
 		checkDimensionality();
@@ -67,8 +68,8 @@ public:
 	Ndarray(shared_ptr<T> data_, vector<size_t> shape_, size_t offset=0):
 		ndim(shape_.size()),
 		offset(offset),
-		shape(shape_),
-		data(data_)
+		data(data_),
+		shape(shape_)
 	{
 		strides = calcStrides();
 		checkDimensionality();
@@ -78,9 +79,9 @@ public:
 	Ndarray(shared_ptr<T> data_, vector<size_t> shape_, vector<size_t> strides_, size_t offset=0):
 		ndim(shape_.size()),
 		offset(offset),
+		data(data_),
 		shape(shape_),
-		strides(strides_),
-		data(data_)
+		strides(strides_)
 	{
 		checkDimensionality();
 	}
@@ -89,8 +90,8 @@ public:
 		/* copy constructor */
 		ndim(other.ndim),
 		offset(other.offset),
-		shape(other.shape),
 		data(other.data),
+		shape(other.shape),
 		strides(other.strides)
 	{
 		checkDimensionality();
