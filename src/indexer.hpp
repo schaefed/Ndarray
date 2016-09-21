@@ -10,7 +10,6 @@ class Strider {
 
 private:
 	vector<size_t> strides_;
-	vector<size_t> offsets_;
 
 	vector<size_t> calcStrides(vector<size_t> shape){
 		auto ndim = shape.size();
@@ -21,47 +20,18 @@ private:
 		return out;
 	}
 
-	vector<size_t> calcOffsets(vector<size_t> shape){
-
-		// most likely not the most efficient way to handle this.
-		// The loop should be replaced by Ndarray calculations one day...
-		// cout << "entered strideOffset()\n";
-		auto ndim = shape.size();
-		auto tmp = vector<size_t>(ndim, 0);
-		for (int64_t i=ndim-1; i>=0; --i){
-			tmp[i] = strides_[i] * (shape[i]-1);
-			if (i < ndim-1){
-				tmp[i] += tmp[i+1];
-			}
-		}
-
-		auto out = strides_;
-		for (int64_t i=ndim-1; i>0; --i){
-			out[i-1] = strides_[i-1] - tmp[i];
-		}
-
-		return out;
-	}
-
 public:
 
 	Strider(vector<size_t> shape)
 	{
 		strides_ = calcStrides(shape);
-		offsets_ = calcOffsets(shape);
 	}
 	Strider(vector<size_t> shape, vector<size_t> strides):
 		strides_(strides)
 	{
-		offsets_ = calcOffsets(shape);
 	}
 	Strider(){}
 		
-
-	vector<size_t> getOffsets(){
-		return offsets_;
-	}
-
 	vector<size_t> getStrides(){
 		return strides_;
 	}
@@ -88,17 +58,16 @@ public:
 
 		index_++;
 		auto strides = strides_.getStrides();
-		auto offsets = strides_.getOffsets();
-		auto index = index_;
+		auto idx = index_;
 		auto i = ndim_-1;
-		while ((i>0) and (index%shape_[i] == 0)){
-			index /= shape_[i];
+		auto accum = 0;
+		while ((i>0) and (idx%shape_[i] == 0)){
+			idx /= shape_[i];
+			accum += ((shape_[i]-1) * strides[i]);
 			i--;
 		}
-		return offsets[i];
+		return strides[i] - accum;
 	}
-	
-
 
 	Indexer(vector<size_t> shape, Strider strides, size_t offset=0, size_t index=0):
 		shape_(shape), strides_(strides), offset_(offset), index_(index){

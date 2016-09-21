@@ -36,28 +36,66 @@ def elementOffsetImplement(array):
 
     return out
 
-def indexDimension(array, idx):
-    offsets = elementOffset(array)
-    shape = np.array(array.shape)
+# def nextIndex(array, idx):
+#     idx +=1 
+#     shape = array.shape
+#     i = array.ndim - 1
+#     while (i>0) and (idx%shape[i] == 0):
+#         idx /= shape[i]
+#         i -= 1
+    
+    
+# def indexDimension(array, idx):
+#     offsets = elementOffset(array)
+#     strides = arrayStrides(array)
+#     shape = np.array(array.shape)
    
-    tmp = idx+1
-    i = len(shape)-1
-    while (i>0) and (tmp%shape[i] == 0):
-        tmp = tmp//shape[i]
-        i -= 1
-    return offsets[i]
+#     tmp = idx+1
+#     i = len(shape)-1
+#     acc = 0
+#     while (i>0) and (tmp%shape[i] == 0):
+#         tmp = tmp//shape[i]
+#         acc += ((shape[i]-1) * strides[i])
+#         i -= 1
+#     return strides[i] - acc
+
+def indexDimension(array, idx):
+    strides = arrayStrides(array)
+    shape = np.array(array.shape)
+    
+    idx = idx+1
+    tmp = 0
+    for i in xrange(array.ndim-1,-1,-1):
+        if idx%shape[i] != 0:
+            break
+        tmp += ((shape[i]-1) * strides[i])
+        idx /= shape[i]
+    return strides[i] - tmp
+    
+    # tmp = idx+1
+    # i = len(shape)-1
+    # acc = 0
+    # while (i>0) and (tmp%shape[i] == 0):
+    #     tmp = tmp//shape[i]
+    #     acc += ((shape[i]-1) * strides[i])
+    #     i -= 1
+    # return strides[i] - acc
    
 
 if __name__== "__main__":
 
-    shape = (4, 4)
+    shape = (4, 4, 4)
     x = np.arange(np.prod(shape)).reshape(shape)
-    print arrayStrides(x[slice(0,4,2)])
-    print x[slice(0,4,2)]
-    print x
+    # print arrayStrides(x[slice(0,4,2)])
+    # print x[slice(0,4,2)]
+    # print x
+    # print nextIndex(x[::2,::2],1)
     # print elementOffset(x[::2,::2])
     # print elementOffsetImplement(x[::2, ::2,::2])
     # for i in xrange(10):
     #     y = indexDimension(x,i+1)
     #     print "results:", i+1, y
-    # print indexDimension(x[::2, ::2,::2], 3)
+    idx = 15
+    print x[::2]
+    test = indexDimension(x[::2], idx)
+    print x.flatten()[test+idx] 
