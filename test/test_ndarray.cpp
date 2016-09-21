@@ -174,11 +174,9 @@ void testIterator(){
 	vector<int64_t> basevec  = range(0, 4*4);
 	Ndarray<int64_t> array(basevec.data(), shape);
 	// cout << "offset: " << array.indexer.getOffset() << endl;
-	auto test = array[Slice(0,4,2)];
+	// auto test = array[Slice(0,4,2)];
 	// auto test = array[Slice(0,2,1)];
-	// auto test = array;
-	cout << "strides:  "<< test.strider.getStrides() << endl;
-	cout << "last index: " << test.indexer.lastIndex() << endl;
+	auto test = array;
 	// cout << test.shape << endl;
 	// cout << test[0][0] << endl;
 	// cout << test[0][1] << endl;
