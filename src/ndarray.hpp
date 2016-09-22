@@ -218,7 +218,6 @@ public:
 		checkIndex(idx);
 		vector<size_t> newshape (&shape[1], &shape[ndim]);
 		int64_t start = idx * strides[0];
-		// vector<size_t> newshape (&shape[1], &shape[ndim]);
 		return Ndarray<U, M>(shared_ptr<T>(data, data.get()+start),
 							 newshape, start + offset
 							 );
@@ -229,17 +228,6 @@ public:
 		return operator[](idx);
 
 	}
-
-	// size_t size(){
-	// 	if (ndim > 0){
-	// 		size_t out = 1;
-	// 		for (uint64_t i=0; i<ndim; i++){
-	// 			out *= shape[i];
-	// 		}
-	// 		return out;
-	// 	}
-	// 	return 0;
-	// }
 
 };
 
