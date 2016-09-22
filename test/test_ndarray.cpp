@@ -150,31 +150,30 @@ void testGetSlice(){
 }
 
 void testIterator(){
-	// vector<size_t> shape = {16, 16};
-	// vector<int64_t> basevec  = range(0, 16*16);
-	vector<size_t> shape = {8, 8};
-	vector<int64_t> basevec  = range(0, 8*8);
+	vector<size_t> shape = {4, 4};
+	vector<int64_t> basevec  = range(product<size_t>(shape));
 	Ndarray<int64_t> array(basevec.data(), shape);
 	Ndarray<int64_t> test;
-	// cout << "offset: " << array.indexer.getOffset() << endl;
-	// auto test = array[Slice(0,4,2)];
-	// auto test = array[Slice(0,2,1)];
-	test = array;
-	for (auto e: test){
-		// cout << "iter: " << e << endl;
-	}
-	// cout << array[Slice(0,4,2)][Slice(0,4,2)].indexer.lastIndex() << endl;
-	// cout << array[Slice(3,8,2)].indexer.lastIndex() << endl;
-	// cout << array[Slice(3,8,2)].shape << endl;
-	// for (auto e : array[Slice(0,6,2)]){
-	// 	cout << e << endl;
-	// }
+
+	auto tester = [](Ndarray<int64_t> array, vector<int64_t> check){
+		int64_t i = 0;
+		for (auto e: array){
+			assert (e == check[i++]); // Wrong iteration element
+		}
+	};
+
+	tester(array, range(16));
+	tester(array[3], range(12, 16));
+	tester(array[Slice(0, 2)], range(8));
+	tester(array[Slice(0, 4, 2)],
+		   concat<int64_t>({range(4), range(8, 12)})
+		   );
 }
 
 int main(){
 
 	vector<size_t> shape = {16, 16};
-	vector<int64_t> basevec  = range(0, 16*16);
+	vector<int64_t> basevec  = range(product<size_t>(shape));
 	Ndarray<int64_t> array(basevec.data(), shape);
 	
 	testGetSlice();
