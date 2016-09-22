@@ -192,21 +192,24 @@ public:
 		}
 	}
 		
-	template<typename U=T, int M=-1>
-	Ndarray<U,M> operator[](Slice slc){
-		slc.update(shape[0]);
+	template<typename U=T, int M=-1, size_t dim=0>
+		Ndarray<U,M> operator[](Slice<dim> slc){
+		if (dim > ndim){
+			throw DimensionError("Invalid slicing dimension");
+		}
+		slc.update(shape[dim]);
 		auto newshape = shape;
 		auto newstrides = strides;
-		int64_t start = slc.start * newstrides[0]; 
-		newshape[0] = ceil((slc.stop - slc.start) / static_cast<double>(slc.step));
-		newstrides[0] = newstrides[0] * slc.step;
+		int64_t start = slc.start * newstrides[dim]; 
+		newshape[dim] = ceil((slc.stop - slc.start) / static_cast<double>(slc.step));
+		newstrides[dim] = newstrides[dim] * slc.step;
 		return Ndarray<T>(shared_ptr<T>(data, data.get()+start),
 						  newshape, newstrides, start + offset // is start+data accesibly from the smart pointer?
 						  );
 	}
 
-	template<typename U=T, int M=-1>
-	const Ndarray<U,M> operator[](Slice slc) const{
+	template<typename U=T, int M=-1, size_t dim=0>
+		const Ndarray<U,M> operator[](Slice<dim> slc) const{
 		return operator[](slc);
 	}
 	

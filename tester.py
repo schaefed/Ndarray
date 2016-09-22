@@ -86,8 +86,9 @@ if __name__== "__main__":
 
     shape = (16, 16)
     x = np.arange(np.prod(shape)).reshape(shape)
-    print x[-5][slice(-12,-3,2)]
-    # print arrayStrides(x[slice(0,4,2)])
+    y = x[slice(0,-1,2), slice(0,-1,2)]
+    print y
+    print arrayStrides(y)
     # print x[slice(0,4,2)]
     # print x
     # print nextIndex(x[::2,::2],1)

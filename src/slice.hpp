@@ -4,6 +4,7 @@
 using namespace std;
 
 
+template<size_t D=0>
 class Slice {
 
 private:
@@ -11,6 +12,7 @@ public:
 	int64_t start;
 	int64_t stop;
 	uint64_t step;
+	size_t dim;
 	
 	Slice(){};
 	// Slice(int64_t start_, int64_t stop_, int64_t step_=1):
@@ -22,7 +24,8 @@ public:
 	Slice(int64_t start_=0, int64_t stop_=-1, uint64_t step_=1):
 		start(start_),
 		stop(stop_),
-		step(step_)
+		step(step_),
+		dim(D)
 	{}
 
 	void update(size_t length){
