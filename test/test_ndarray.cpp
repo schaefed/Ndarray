@@ -34,10 +34,10 @@ void testAssignment(Ndarray<T> array){
 template<typename T>
 void testOutOfBounds(Ndarray<T> &array){
 	assert(array.ndim >= 1); // test array needs to have 2 or more dimensions
-	try{
-		array[-1];
-		assert(false); // exception not thrown!
-	} catch(IndexError){}
+	// try{
+	// 	array[-1];
+	// 	assert(false); // exception not thrown!
+	// } catch(IndexError){}
 
 	try{
 		array[array.shape[0]];
@@ -106,7 +106,6 @@ void testGetSlice(){
 	assert (sliced[0][0] == 0); // Slicing test failed
 	assert (sliced[0][7] == 7); // Slicing test failed
 	assert (sliced[0][15] == 15); // Slicing test failed
-
 	assert (sliced[1][0] == 16); // Slicing test failed
 	assert (sliced[1][7] == 23); // Slicing test failed
 	assert (sliced[1][15] == 31); // Slicing test failed
@@ -138,6 +137,23 @@ void testGetSlice(){
 	assert (sliced[0] == 32 + 1); // Slicing test faile	assert (sliced.ndim == 1); // Slicing return wrong dimensionality
 	assert (sliced[1] == 32 + 3); // Slicing test failed
 	assert (sliced[4] == 32 + 9); // Slicing test failed
+
+	sliced = array[-1];
+	assert (sliced[0] == 240); // negative integer slicing failed
+	assert (sliced[6] == 246); // negative integer slicing failed
+	assert (sliced[-10] == 246); // negative integer slicing failed
+	assert (sliced[-1] == 255); // negative integer slicing failed
+
+	sliced = array[0][Slice(0,-3)];
+	assert (sliced[0] == 0); // negative integer slicing failed
+	assert (sliced[6] == 6); // negative integer slicing failed
+	assert (sliced[12] == 12); // negative integer slicing failed
+	assert (sliced[-1] == 12); // negative integer slicing failed
+		
+	sliced = array[-5][Slice(-12,-3,2)];
+	assert (sliced[0] == 180); // negative integer slicing failed
+	assert (sliced[2] == 184); // negative integer slicing failed
+	assert (sliced[-3] == 184); // negative integer slicing failed
 
 	// This is not implemented yet
 	// sliced = array[Slice(1,11,2)][Slice(1,11,2)];

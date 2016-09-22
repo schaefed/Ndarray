@@ -84,8 +84,9 @@ def indexDimension(array, idx):
 
 if __name__== "__main__":
 
-    shape = (4, 4, 4)
+    shape = (16, 16)
     x = np.arange(np.prod(shape)).reshape(shape)
+    print x[-5][slice(-12,-3,2)]
     # print arrayStrides(x[slice(0,4,2)])
     # print x[slice(0,4,2)]
     # print x
@@ -95,7 +96,7 @@ if __name__== "__main__":
     # for i in xrange(10):
     #     y = indexDimension(x,i+1)
     #     print "results:", i+1, y
-    idx = 15
-    print x[::2]
-    test = indexDimension(x[::2], idx)
-    print x.flatten()[test+idx] 
+    # idx = 15
+    # print x[::2]
+    # test = indexDimension(x[::2], idx)
+    # print x.flatten()[test+idx] 

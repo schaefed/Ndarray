@@ -32,6 +32,7 @@ public:
 	typedef DataIterator<const T> const_iterator;
 	
 	size_t ndim;
+	size_t size;
 	size_t offset;
 	shared_ptr<T> data;
 	vector<size_t> shape;
@@ -39,6 +40,7 @@ public:
 
 	Ndarray():
 		ndim(0),
+		size(0),
 		offset(0),
 		data(shared_ptr<T>(nullptr)),
 		shape(vector<size_t>()),
@@ -47,6 +49,7 @@ public:
 
 	Ndarray(vector<size_t> shape_, function<void(T*)> destructor=_deleteArray<T>):
 		ndim(shape_.size()),
+		size(product(shape_)),
 		offset(0),
 		data(shared_ptr<T>(new T[size()], destructor)),
 		shape(shape_)
@@ -57,6 +60,7 @@ public:
 
 	Ndarray(T* data_, vector<size_t> shape_, function<void(T*)> destructor=_deleteNothing<T>):
 		ndim(shape_.size()),
+		size(product(shape_)),
 		offset(0),
 		data(shared_ptr<T>(data_, destructor)),
 		shape(shape_)
@@ -67,6 +71,7 @@ public:
 
 	Ndarray(shared_ptr<T> data_, vector<size_t> shape_, size_t offset=0):
 		ndim(shape_.size()),
+		size(product(shape_)),
 		offset(offset),
 		data(data_),
 		shape(shape_)
@@ -78,6 +83,7 @@ public:
 
 	Ndarray(shared_ptr<T> data_, vector<size_t> shape_, vector<size_t> strides_, size_t offset=0):
 		ndim(shape_.size()),
+		size(product(shape_)),
 		offset(offset),
 		data(data_),
 		shape(shape_),
@@ -89,6 +95,7 @@ public:
 	Ndarray(const Ndarray<T,N>& other):
 		/* copy constructor */
 		ndim(other.ndim),
+		size(other.size),
 		offset(other.offset),
 		data(other.data),
 		shape(other.shape),
@@ -161,6 +168,7 @@ public:
 		
 	friend void swap(Ndarray<T,N>& first, Ndarray<T,N>& second){
 		swap(first.ndim, second.ndim);
+		swap(first.size, second.size);
 		swap(first.offset, second.offset);
 		swap(first.shape, second.shape);
 		swap(first.data, second.data);		
@@ -186,6 +194,7 @@ public:
 		
 	template<typename U=T, int M=-1>
 	Ndarray<U,M> operator[](Slice slc){
+		slc.update(shape[0]);
 		auto newshape = shape;
 		auto newstrides = strides;
 		int64_t start = slc.start * newstrides[0]; 
@@ -203,6 +212,9 @@ public:
 	
 	template<typename U=T, int M=-1>
 	Ndarray<U,M> operator[](int64_t idx){
+		if (idx < 0){
+			idx += shape[0];
+		}
 		checkIndex(idx);
 		vector<size_t> newshape (&shape[1], &shape[ndim]);
 		int64_t start = idx * strides[0];
@@ -218,16 +230,16 @@ public:
 
 	}
 
-	size_t size(){
-		if (ndim > 0){
-			size_t out = 1;
-			for (uint64_t i=0; i<ndim; i++){
-				out *= shape[i];
-			}
-			return out;
-		}
-		return 0;
-	}
+	// size_t size(){
+	// 	if (ndim > 0){
+	// 		size_t out = 1;
+	// 		for (uint64_t i=0; i<ndim; i++){
+	// 			out *= shape[i];
+	// 		}
+	// 		return out;
+	// 	}
+	// 	return 0;
+	// }
 
 };
 
