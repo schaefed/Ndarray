@@ -220,9 +220,10 @@ public:
 		}
 		checkIndex(idx);
 		vector<size_t> newshape (&shape[1], &shape[ndim]);
+		vector<size_t> newstrides (&strides[1], &strides[ndim]);
 		int64_t start = idx * strides[0];
 		return Ndarray<U, M>(shared_ptr<T>(data, data.get()+start),
-							 newshape, start + offset
+							 newshape, newstrides, start + offset
 							 );
 	}
 
