@@ -2,7 +2,6 @@
 CC=g++
 CFLAGS=-std=c++14 -Wall -g -pedantic
 
-BUILDDIR  = build
 SRCDIR	  = src
 TESTDIR	  = test
 
@@ -10,18 +9,17 @@ TESTFILES = $(wildcard $(TESTDIR)/*.cpp)
 TESTS  = $(patsubst $(TESTDIR)/%.cpp, $(TESTDIR)/%.test, $(TESTFILES))
 
 
-all: clean test
+all: test
 
 test: $(TESTS)
 	$(foreach test,$(TESTS),./$(test);)
 
 
-$(TESTS): $(OBJFILES) $(TESTDIR)/%.test : $(TESTDIR)/%.cpp
+$(TESTS): $(TESTDIR)/%.test : $(TESTDIR)/%.cpp
 	$(CC) -I$(SRCDIR) $(CFLAGS) $< -o $@
 
-
 clean:
-	$(RM) $(OBJFILES) $(DEPSFILES) $(TESTS) 
+	$(RM) $(TESTS) 
 
 print-%:
 	@echo '$*=$($*)'
