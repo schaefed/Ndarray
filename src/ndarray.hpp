@@ -14,7 +14,7 @@
 
 using namespace std;
 
-template<typename T, int N=-1> class Ndarray {
+template<typename T, size_t N> class Ndarray {
 		
 private:
 
@@ -126,21 +126,6 @@ public:
 		return iterator(&data.get()[shape[0] * strides[0]], shape, strides);
 	}
 
-	
-	template<typename U, int M=-1>
-	operator Ndarray<U,M>(){
-		/*
-		  Allows to convert in both directions:
-		  1. Ndarray<T>   -> Ndarray<T,N>
-		  2. Ndarray<T,N> -> Ndarray<T>
-		 */
-		return Ndarray<U,M>(this->data,
-							this->shape,
-							this->strides,
-							this->offset);
-	}
-	
-		
 	Ndarray<T,N>& operator=(Ndarray<T,N> that){
 		/* copy asignment operator*/
 		swap(*this, that);
@@ -185,15 +170,13 @@ public:
 	}
 
 	void checkDimensionality(){
-		if (N > 0) {
-			if (static_cast<int64_t>(ndim) != N){
-				throw DimensionError("Invalid dimensions!");
-			}
+		if (N != ndim){
+			throw DimensionError("Invalid shape for array of given dimensions!");
 		}
 	}
 		
-	template<typename U=T, int M=-1, size_t dim=0>
-		Ndarray<U,M> operator[](Slice<dim> slc){
+	template<size_t dim=0>
+	Ndarray<T, N> operator[](Slice<dim> slc){
 		if (dim > ndim){
 			throw DimensionError("Invalid slicing dimension");
 		}
@@ -203,18 +186,17 @@ public:
 		int64_t start = slc.start * newstrides[dim]; 
 		newshape[dim] = ceil((slc.stop - slc.start) / static_cast<double>(slc.step));
 		newstrides[dim] = newstrides[dim] * slc.step;
-		return Ndarray<T>(shared_ptr<T>(data, data.get()+start),
-						  newshape, newstrides, start + offset // is start+data accesibly from the smart pointer?
-						  );
+		return Ndarray<T, N>(shared_ptr<T>(data, data.get()+start),
+							 newshape, newstrides, start + offset // is start+data accesibly from the smart pointer?
+							 );
 	}
 
-	template<typename U=T, int M=-1, size_t dim=0>
-		const Ndarray<U,M> operator[](Slice<dim> slc) const{
+	template<size_t dim>
+	const Ndarray<T, N> operator[](Slice<dim> slc) const{
 		return operator[](slc);
 	}
 	
-	template<typename U=T, int M=-1>
-	Ndarray<U,M> operator[](int64_t idx){
+	Ndarray<T,N-1> operator[](int64_t idx){
 		if (idx < 0){
 			idx += shape[0];
 		}
@@ -222,13 +204,12 @@ public:
 		vector<size_t> newshape (&shape[1], &shape[ndim]);
 		vector<size_t> newstrides (&strides[1], &strides[ndim]);
 		int64_t start = idx * strides[0];
-		return Ndarray<U, M>(shared_ptr<T>(data, data.get()+start),
-							 newshape, newstrides, start + offset
-							 );
+		return Ndarray<T, N-1>(shared_ptr<T>(data, data.get()+start),
+							   newshape, newstrides, start + offset
+							   );
 	}
 
-	template<typename U, int M=-1>
-	const Ndarray<U,M> operator[](int64_t idx) const{
+	const Ndarray<T, N-1> operator[](int64_t idx) const{
 		return operator[](idx);
 
 	}

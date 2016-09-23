@@ -15,12 +15,6 @@ the possibility to pass a destructor function, which will be called if the refer
 If no pointer is passed to the constructor, an array of the paramterized datatype will be used to store data and is
 freed when no other Ndarray objects points into the data.
 
-The Ndarray class is templated by the data type of the underlying data and the dimensionality of the array. The latter
-parameter defaults to -1. This means, that the dimensionality is not fixed and can be changed through the interface.
-Operations like flattening and arbitrary reshaping of objects are trivial operations in this state of an object. 
-An implicit conversion function allows the easy transformation from one state (e.g. not fixed dimensionality) to the other
-(i.e. fixed dimensionality).
-
 # Status
 This library is work in progress and only the most basic things are implemented, notably:
 - Data sharing.

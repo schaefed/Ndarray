@@ -7,22 +7,12 @@
 
 #include "ndarray.hpp"
 
-template<typename T>
-void testGetItem(Ndarray<T> &base, vector<T> &compare){
 
-	assert(base.ndim >= 2); // test array needs to have 2 or more dimensions
-	int k=0;
-	for (uint64_t i=0 ; i<base.shape[0] ; i++){
-		for (uint64_t j=0 ; j<base.shape[0] ; j++){
-			assert(base[i][j] == compare[k]); // Values not identical
-			k++;
-		}
-	}
-}
-	
-template<typename T>
-void testAssignment(Ndarray<T> array){
-	assert(array.ndim >= 2); // test array needs to have 2 or more dimensions
+void testAssignment(){
+	vector<size_t> shape = {4, 4};
+	vector<int64_t> basevec  = range(product<size_t>(shape));
+	Ndarray<int64_t, 2> array(basevec.data(), shape);
+
 	for (uint64_t i=0 ; i<array.shape[0] ; i++){
 		for (uint64_t j=0 ; j< array.shape[0] ; j++){
 			array[i][j] = 42;
@@ -31,148 +21,98 @@ void testAssignment(Ndarray<T> array){
 	}
 }
 
-template<typename T>
-void testOutOfBounds(Ndarray<T> &array){
-	assert(array.ndim >= 1); // test array needs to have 2 or more dimensions
-	// try{
-	// 	array[-1];
-	// 	assert(false); // exception not thrown!
-	// } catch(IndexError){}
-
+void testOutOfBounds(){
+	vector<size_t> shape = {4, 4};
+	vector<int64_t> basevec  = range(product<size_t>(shape));
+	Ndarray<int64_t, 2> array(basevec.data(), shape);
 	try{
 		array[array.shape[0]];
 		assert(false); // exception not thrown!
 	} catch(IndexError){}
 }
 
-template<typename T>
-void testStaticDims(Ndarray<T> &array){
-	vector<size_t> shape = {16, 16};
-	vector<int64_t> basevec  = range(0, 16*16);
-	Ndarray<int64_t> free(basevec.data(), shape);
-	Ndarray<int64_t, 2> fixed(basevec.data(), shape);
-
-	try{
-		Ndarray<int64_t, 3> t1(basevec.data(), shape);
-		assert(false); // DimensionError not thrown
-	}catch(DimensionError){}
-
-	try{
-		Ndarray<int64_t, 2> t2(basevec.data(), vector<size_t>{2,4,4});
-		assert(false); // DimensionError not thrown
-	}catch(DimensionError){}
-
-	
-	// copy assign Ndarray<T, N> to Ndarray<T, N>
-	Ndarray<int64_t, 2> t3 = fixed;
-	try{
-		Ndarray<int64_t, 3> t4 = fixed;
-		assert(false); // DimensionError not thrown
-	}catch(DimensionError){}
-
-	// auto convert from Ndarray<T> to Ndarray<T,N>
-	Ndarray<int64_t, 2> t5 = free; //.freeze();
-	
-	// auto convert from Ndarray<T,N> to Ndarray<T>
-	Ndarray<int64_t> t6 = fixed;
-
-	// slicing integer
-	Ndarray<int64_t, 1> t7 = fixed[1];
-	try{
-		Ndarray<int64_t, 3> t8 = fixed[1];
-		assert(false); // DimensionError not thrown
-	}catch(DimensionError){}
-
-	// slicing Slice
-	Ndarray<int64_t, 2> test5 = fixed[Slice<>(0,5,1)];
-	try{
-		Ndarray<int64_t, 1> t8 = fixed[Slice<>(0,5,1)];
-		assert(false); // DimensionError not thrown
-	}catch(DimensionError){}
-} 
-
-void testGetSlice(){
+void testSlicing(){
 
 	vector<size_t> shape = {16, 16};
 	vector<int64_t> basevec  = range(0, 16*16);
-	Ndarray<int64_t> array(basevec.data(), shape);
-	Ndarray<int64_t> sliced;
+	Ndarray<int64_t, 2> array(basevec.data(), shape);
+	Ndarray<int64_t, 1> sliced1;
+	Ndarray<int64_t, 2> sliced2;
 
-	sliced = array[Slice<>(0,3)];
-	assert (sliced.ndim == 2); // Slicing return wrong dimensionality
-	assert (sliced.shape.size() == 2); // Slicing return wrong shape
-	assert (sliced.shape[0] == 3); // Slicing return wrong shape
-	assert (sliced.shape[1] == 16); // Slicing return wrong shape
-	assert (sliced[0][0] == 0); // Slicing test failed
-	assert (sliced[0][7] == 7); // Slicing test failed
-	assert (sliced[0][15] == 15); // Slicing test failed
-	assert (sliced[1][0] == 16); // Slicing test failed
-	assert (sliced[1][7] == 23); // Slicing test failed
-	assert (sliced[1][15] == 31); // Slicing test failed
-	assert (sliced[2][0] == 32); // Slicing test failed
-	assert (sliced[2][7] == 39); // Slicing test failed
-	assert (sliced[2][15] == 47); // Slicing test failed
+	sliced2 = array[Slice<>(0,3)];
+	assert (sliced2.ndim == 2); // Slicing return wrong dimensionality
+	assert (sliced2.shape.size() == 2); // Slicing return wrong shape
+	assert (sliced2.shape[0] == 3); // Slicing return wrong shape
+	assert (sliced2.shape[1] == 16); // Slicing return wrong shape
+	assert (sliced2[0][0] == 0); // Slicing test failed
+	assert (sliced2[0][7] == 7); // Slicing test failed
+	assert (sliced2[0][15] == 15); // Slicing test failed
+	assert (sliced2[1][0] == 16); // Slicing test failed
+	assert (sliced2[1][7] == 23); // Slicing test failed
+	assert (sliced2[1][15] == 31); // Slicing test failed
+	assert (sliced2[2][0] == 32); // Slicing test failed
+	assert (sliced2[2][7] == 39); // Slicing test failed
+	assert (sliced2[2][15] == 47); // Slicing test failed
 
-	sliced = array[0][Slice<>(1,8)];
-	assert (sliced.ndim == 1); // Slicing return wrong dimensionality
-	assert (sliced.shape.size() == 1); // Slicing return wrong shape
-	assert (sliced.shape[0] == 7); // Slicing return wrong shape
-	assert (sliced[0] == 1); // Slicing test failed
-	assert (sliced[1] == 2); // Slicing test failed
-	assert (sliced[4] == 5); // Slicing test failed
-	assert (sliced[6] == 7); // Slicing test failed
+	sliced1 = array[0][Slice<>(1,8)];
+	assert (sliced1.ndim == 1); // Slicing return wrong dimensionality
+	assert (sliced1.shape.size() == 1); // Slicing return wrong shape
+	assert (sliced1.shape[0] == 7); // Slicing return wrong shape
+	assert (sliced1[0] == 1); // Slicing test failed
+	assert (sliced1[1] == 2); // Slicing test failed
+	assert (sliced1[4] == 5); // Slicing test failed
+	assert (sliced1[6] == 7); // Slicing test failed
 
-	sliced = array[0][Slice<>(1,11,2)];
-	assert (sliced.ndim == 1); // Slicing return wrong dimensionality
-	assert (sliced.shape.size() == 1); // Slicing return wrong shape
-	assert (sliced.shape[0] == 5); // Slicing return wrong shape
-	assert (sliced[0] == 1); // Slicing test failed
-	assert (sliced[1] == 3); // Slicing test failed
-	assert (sliced[4] == 9); // Slicing test failed
+	sliced1 = array[0][Slice<>(1,11,2)];
+	assert (sliced1.ndim == 1); // Slicing return wrong dimensionality
+	assert (sliced1.shape.size() == 1); // Slicing return wrong shape
+	assert (sliced1.shape[0] == 5); // Slicing return wrong shape
+	assert (sliced1[0] == 1); // Slicing test failed
+	assert (sliced1[1] == 3); // Slicing test failed
+	assert (sliced1[4] == 9); // Slicing test failed
 
-	sliced = array[2][Slice<>(1,11,2)];
-	assert (sliced.ndim == 1); // Slicing return wrong dimensionality
-	assert (sliced.shape.size() == 1); // Slicing return wrong shape
-	assert (sliced.shape[0] == 5); // Slicing return wrong shape
-	assert (sliced[0] == 32 + 1); // Slicing test faile	assert (sliced.ndim == 1); // Slicing return wrong dimensionality
-	assert (sliced[1] == 32 + 3); // Slicing test failed
-	assert (sliced[4] == 32 + 9); // Slicing test failed
+	sliced1 = array[2][Slice<>(1,11,2)];
+	assert (sliced1.ndim == 1); // Slicing return wrong dimensionality
+	assert (sliced1.shape.size() == 1); // Slicing return wrong shape
+	assert (sliced1.shape[0] == 5); // Slicing return wrong shape
+	assert (sliced1[0] == 32 + 1); // Slicing test failed	
+	assert (sliced1[1] == 32 + 3); // Slicing test failed
+	assert (sliced1[4] == 32 + 9); // Slicing test failed
 
-	sliced = array[-1];
-	assert (sliced[0] == 240); // negative integer slicing failed
-	assert (sliced[6] == 246); // negative integer slicing failed
-	assert (sliced[-10] == 246); // negative integer slicing failed
-	assert (sliced[-1] == 255); // negative integer slicing failed
+	sliced1 = array[-1];
+	assert (sliced1[0] == 240); // negative integer slicing failed
+	assert (sliced1[6] == 246); // negative integer slicing failed
+	assert (sliced1[-10] == 246); // negative integer slicing failed
+	assert (sliced1[-1] == 255); // negative integer slicing failed
 
-	sliced = array[0][Slice<>(0,-3)];
-	assert (sliced[0] == 0); // negative integer slicing failed
-	assert (sliced[6] == 6); // negative integer slicing failed
-	assert (sliced[12] == 12); // negative integer slicing failed
-	assert (sliced[-1] == 12); // negative integer slicing failed
+	sliced1 = array[0][Slice<>(0,-3)];
+	assert (sliced1[0] == 0); // negative integer slicing failed
+	assert (sliced1[6] == 6); // negative integer slicing failed
+	assert (sliced1[12] == 12); // negative integer slicing failed
+	assert (sliced1[-1] == 12); // negative integer slicing failed
 		
-	sliced = array[-5][Slice<>(-12,-3,2)];
-	assert (sliced[0] == 180); // negative integer slicing failed
-	assert (sliced[2] == 184); // negative integer slicing failed
-	assert (sliced[-3] == 184); // negative integer slicing failed
+	sliced1 = array[-5][Slice<>(-12,-3,2)];
+	assert (sliced1[0] == 180); // negative integer slicing failed
+	assert (sliced1[2] == 184); // negative integer slicing failed
+	assert (sliced1[-3] == 184); // negative integer slicing failed
 
-	sliced = array[Slice<0>(0,-1,2)][Slice<1>(0,-1,2)];
-	assert (sliced[0][0] == 0);
-	assert (sliced[0][3] == 6);
-	assert (sliced[0][-1] == 14);
+	sliced2 = array[Slice<0>(0,-1,2)][Slice<1>(0,-1,2)];
+	assert (sliced2[0][0] == 0);
+	assert (sliced2[0][3] == 6);
+	assert (sliced2[0][-1] == 14);
 
-	assert (sliced[-2][0] == 192);
-	assert (sliced[-2][3] == 198);
-	assert (sliced[-2][-1] == 206);
+	assert (sliced2[-2][0] == 192);
+	assert (sliced2[-2][3] == 198);
+	assert (sliced2[-2][-1] == 206);
 
 }
 
 void testIterator(){
 	vector<size_t> shape = {4, 4};
 	vector<int64_t> basevec  = range(product<size_t>(shape));
-	Ndarray<int64_t> array(basevec.data(), shape);
-	Ndarray<int64_t> test;
+	Ndarray<int64_t, 2> array(basevec.data(), shape);
 
-	auto tester = [](Ndarray<int64_t> array, vector<int64_t> check){
+	auto tester = [](auto array, vector<int64_t> check){
 		int64_t i = 0;
 		for (auto e: array){
 			assert (e == check[i++]); // Wrong iteration element
@@ -189,14 +129,9 @@ void testIterator(){
 
 int main(){
 
-	vector<size_t> shape = {16, 16};
-	vector<int64_t> basevec  = range(product<size_t>(shape));
-	Ndarray<int64_t> array(basevec.data(), shape);
-	
-	testGetSlice();
-	testAssignment(array);
-	testOutOfBounds(array);
-	testStaticDims(array);
+	testSlicing();
+	testAssignment();
+	testOutOfBounds();
 	testIterator();
 
 	return 0;
