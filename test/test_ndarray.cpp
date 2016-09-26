@@ -11,7 +11,6 @@
 void testAssignment(){
 	vector<size_t> shape = {16, 16};
 	vector<int64_t> basevec  = range(product<size_t>(shape));
-	// Ndarray<int64_t, 2> array(basevec.data(), shape);
 	auto array = ndarray<int64_t, 2>(basevec.data(), shape);
 	
 	for (uint64_t i=0 ; i<array.shape[0] ; i++){
@@ -32,52 +31,6 @@ void testOutOfBounds(){
 		assert(false); // exception not thrown!
 	} catch(IndexError){}
 }
-
-// template<typename T>
-// void testStaticDims(Ndarray<T> &array){
-// 	vector<size_t> shape = {16, 16};
-// 	vector<int64_t> basevec  = range(0, 16*16);
-// 	Ndarray<int64_t> free(basevec.data(), shape);
-// 	Ndarray<int64_t, 2> fixed(basevec.data(), shape);
-
-// 	try{
-// 		Ndarray<int64_t, 3> t1(basevec.data(), shape);
-// 		assert(false); // DimensionError not thrown
-// 	}catch(DimensionError){}
-
-// 	try{
-// 		Ndarray<int64_t, 2> t2(basevec.data(), vector<size_t>{2,4,4});
-// 		assert(false); // DimensionError not thrown
-// 	}catch(DimensionError){}
-
-	
-// 	// copy assign Ndarray<T, N> to Ndarray<T, N>
-// 	Ndarray<int64_t, 2> t3 = fixed;
-// 	try{
-// 		Ndarray<int64_t, 3> t4 = fixed;
-// 		assert(false); // DimensionError not thrown
-// 	}catch(DimensionError){}
-
-// 	// auto convert from Ndarray<T> to Ndarray<T,N>
-// 	Ndarray<int64_t, 2> t5 = free; //.freeze();
-	
-// 	// auto convert from Ndarray<T,N> to Ndarray<T>
-// 	Ndarray<int64_t> t6 = fixed;
-
-// 	// slicing integer
-// 	Ndarray<int64_t, 1> t7 = fixed[1];
-// 	try{
-// 		Ndarray<int64_t, 3> t8 = fixed[1];
-// 		assert(false); // DimensionError not thrown
-// 	}catch(DimensionError){}
-
-// 	// slicing Slice
-// 	Ndarray<int64_t, 2> test5 = fixed[Slice<>(0,5,1)];
-// 	try{
-// 		Ndarray<int64_t, 1> t8 = fixed[Slice<>(0,5,1)];
-// 		assert(false); // DimensionError not thrown
-// 	}catch(DimensionError){}
-// } 
 
 void testSlicing(){
 
@@ -152,8 +105,6 @@ void testSlicing(){
 	assert (sliced[-2][0] == 192);
 	assert (sliced[-2][3] == 198);
 	assert (sliced[-2][-1] == 206);
-
-	cout << array[0][0].shape << endl;
 }
 
 void testIterator(){
@@ -180,16 +131,10 @@ void testIterator(){
 int main(){
 
 
-	auto test2D = ndarray<size_t,2>({1,1});
-	// test2D.test();
-
-	auto test1D = ndarray<size_t,1>({1});
-	cout << test1D[0].shape << endl;
-	// test1D.test();
 	// testAssignment();
 	// testOutOfBounds();
 	// testSlicing();
-	// testIterator();
+	testIterator();
 
 	return 0;
 }

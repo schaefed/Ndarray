@@ -14,7 +14,7 @@
 
 using namespace std;
 
-template<typename T, int N> class Ndarray{
+template<typename T, int N> class NdarrayBase{
 		
 private:
 
@@ -30,20 +30,20 @@ public:
 	vector<size_t> shape;
 	vector<size_t> strides;
 
-	Ndarray(size_t ndim_, size_t size_, size_t offset_, shared_ptr<T> data_,
+	NdarrayBase(size_t ndim_, size_t size_, size_t offset_, shared_ptr<T> data_,
 			vector<size_t> shape_, vector<size_t> strides_):
 		ndim(ndim_), size(size_), offset(offset_),
 		data(data_), shape(shape_), strides(strides_)
 	{
-		checkDimensionality();
+		checkDimensions();
 	}
 
-	Ndarray():
+	NdarrayBase():
 		ndim(0), size(0), offset(0),
 		data(shared_ptr<T>(nullptr)), shape(vector<size_t>()), strides(vector<size_t>())
 	{}
 
-	Ndarray(const Ndarray<T,N>& other):
+	NdarrayBase(const NdarrayBase<T,N>& other):
 		/* copy constructor */
 		ndim(other.ndim),
 		size(other.size),
@@ -52,12 +52,12 @@ public:
 		shape(other.shape),
 		strides(other.strides)
 	{
-		checkDimensionality();
+		checkDimensions();
 	}
 	
-	Ndarray(Ndarray<T,N>&& other):
+	NdarrayBase(NdarrayBase<T,N>&& other):
 		/* move constructor */
-		Ndarray<T,N>()
+		NdarrayBase<T,N>()
 	{
 		swap(*this, other);
 	}
@@ -77,7 +77,7 @@ public:
 	}
 
 	
-	Ndarray<T,N>& operator=(Ndarray<T,N> that){
+	NdarrayBase<T,N>& operator=(NdarrayBase<T,N> that){
 		/* copy asignment operator*/
 		swap(*this, that);
 		return *this;
@@ -95,14 +95,8 @@ public:
 		data.get()[0] = other;
 	}
 
-	operator T(){
-		if (ndim > 0){
-			throw range_error("Only length-1 arrays can be converted to scalars!");
-		}
-		return data.get()[0];
-	}
-		
-	friend void swap(Ndarray<T,N>& first, Ndarray<T,N>& second){
+	
+	friend void swap(NdarrayBase<T,N>& first, NdarrayBase<T,N>& second){
 		swap(first.ndim, second.ndim);
 		swap(first.size, second.size);
 		swap(first.offset, second.offset);
@@ -111,135 +105,109 @@ public:
 		swap(first.strides, second.strides);
 	}
 
-	void checkIndex(uint64_t idx){
+	void checkIndex(int64_t idx, uint64_t dim){
 		if (ndim < 1){
 			throw IndexError("Too many indices!");
 		}
-		if (idx >= shape[0]) {
+		if (dim > (ndim-1)){
+			throw IndexError("Invalid index dimension!");
+		}
+		if ((idx < 0) or (idx >= static_cast<int64_t>(shape[dim]))) {
+			cout << "Offending index: " << idx << endl;
+			cout << "Dimension: " << dim << endl;
+			cout << "Dimension length: " << shape[dim] << endl;
 			throw IndexError("Index out of bounds");
 		}
 	}
 
-	void checkDimensionality(){
+	template<size_t DIM>
+	void checkIndex(Slice<DIM> slc){
+		checkIndex(slc.start, DIM);
+		// stop can be larger than the dimension length,
+		// at least numpy handles it that way
+		// checkIndex(slc.stop, DIM);
+	}
+
+	void checkDimensions(){
 		if (static_cast<int64_t>(ndim) != N){
 			throw DimensionError("Invalid dimensions!");
 		}
 	}
 		
+};
+
+
+template<typename T, size_t N>
+class Ndarray : public NdarrayBase<T,N> {
+
+public:
+	using NdarrayBase<T,N>::NdarrayBase ;
+	using NdarrayBase<T,N>::operator= ;
+
 	template<size_t DIM>
-		Ndarray<T,N> operator[](Slice<DIM> slc){
-		if (DIM > ndim){
+	Ndarray<T,N> operator[](Slice<DIM> slc){
+
+		if (DIM > this->ndim){
 			throw DimensionError("Invalid slicing dimension");
 		}
-		slc.update(shape[DIM]);
-		auto newshape = shape;
-		auto newstrides = strides;
+
+		slc.update(this->shape[DIM]);
+		this->checkIndex(slc);
+		auto newshape = this->shape;
+		auto newstrides = this->strides;
 		int64_t start = slc.start * newstrides[DIM]; 
 		newshape[DIM] = ceil((slc.stop - slc.start) / static_cast<double>(slc.step));
 		newstrides[DIM] = newstrides[DIM] * slc.step;
 		return Ndarray<T,N>(N,
 							product(newshape),
-							start + offset, 
-							shared_ptr<T>(data, data.get()+start),
+							start + this->offset, 
+							shared_ptr<T>(this->data, (this->data).get()+start),
 							newshape,
 							newstrides // is start+data accesibly from the smart pointer?
 							);
 	}
 
 	template<size_t DIM>
-		const Ndarray<T,N> operator[](Slice<DIM> slc) const{
+	const Ndarray<T,N> operator[](Slice<DIM> slc) const{
 		return operator[](slc);
 	}
+
 	
 	Ndarray<T,N-1> operator[](int64_t idx){
 		if (idx < 0){
-			idx += shape[0];
+			idx += this->shape[0];
 		}
-		checkIndex(idx);
-		vector<size_t> newshape (&shape[1], &shape[ndim]);
-		vector<size_t> newstrides (&strides[1], &strides[ndim]);
-		int64_t start = idx * strides[0];
+		this->checkIndex(idx,0);
+		vector<size_t> newshape (&(this->shape[1]), &(this->shape[this->ndim]));
+		vector<size_t> newstrides (&(this->strides[1]), &(this->strides[this->ndim]));
+		int64_t start = idx * this->strides[0];
 		return Ndarray<T, N-1>(N-1,
 							   product(newshape),
-							   start + offset,
-							   shared_ptr<T>(data, data.get()+start),
+							   start + this->offset,
+							   shared_ptr<T>(this->data, this->data.get()+start),
 							   newshape,
 							   newstrides 
 							   );
 	}
 
-	const Ndarray<T,N> operator[](int64_t idx) const{
-		return operator[](idx);
-
-	}
-
-};
-
-template<typename T, size_t N>
-class NdarrayTest : public Ndarray<T,N> {
-
-public:
-	using Ndarray<T,N>::Ndarray ;
-	using Ndarray<T,N>::operator= ;
-	NdarrayTest(size_t ndim_, size_t size_, size_t offset_,
-				shared_ptr<T> data_,
-				vector<size_t> shape_, vector<size_t> strides_):
-		Ndarray<T,N>(ndim_, size_, offset_, data_, shape_, strides_){
-		
-		cout << "ND" << N << endl ;
-	}
-
-
-	// Ndarray<T, N-1> operator[](int64_t idx){
-	// 	if (idx < 0){
-	// 		idx += this->shape[0];
-	// 	}
-	// 	// checkIndex(idx);
-	// 	vector<size_t> newshape (&(this->shape[1]), &(this->shape[this->ndim]));
-	// 	vector<size_t> newstrides (&(this->strides[1]), &(this->strides[this->ndim]));
-	// 	int64_t start = idx * this->strides[0];
-	// 	return Ndarray<T, N-1>(N-1,
-	// 						   product(newshape),
-	// 						   start + this->offset,
-	// 						   shared_ptr<T>(this->data, this->data.get()+start),
-	// 						   newshape,
-	// 						   newstrides 
-	// 						   );
-	// }
-
-	// const Ndarray<T,N> operator[](int64_t idx) const{
-	// 	return operator[](idx);
-
-	// }
-
-	// NdarrayTest(const Ndarray<T,N>& other):
-	// 	Ndarray<T,N>(other) {}
-	
-	// NdarrayTest(Ndarray<T,N>&& other):
-	// 	Ndarray<T,N>(other){}
 
 };
 
 
 template<typename T>
-class NdarrayTest<T,1> : public Ndarray<T,1> {
+class Ndarray<T,1> : public NdarrayBase<T,1> {
 
 public:
-	using Ndarray<T,1>::Ndarray ;
-	using Ndarray<T,1>::operator= ;
-	NdarrayTest(size_t ndim_, size_t size_, size_t offset_,
-				shared_ptr<T> data_,
-				vector<size_t> shape_, vector<size_t> strides_):
-		Ndarray<T,1>(ndim_, size_, offset_, data_, shape_, strides_){
-		cout << "1D\n" ;
-	}
+	using NdarrayBase<T,1>::NdarrayBase ;
+	using NdarrayBase<T,1>::operator= ;
 
-	NdarrayTest<T,1> operator[](int64_t idx){
+	Ndarray<T,1> operator[](int64_t idx){
 		if (idx < 0){
 			idx += (this->shape)[0];
 		}
+		this->checkIndex(idx, 0);
 		int64_t start = idx * this->strides[0];
-		return NdarrayTest<T, 1>(1,
+		return Ndarray<T, 1>(1,
 								 1,
 								 start + this->offset,
 								 shared_ptr<T>(this->data, this->data.get()+start),
@@ -252,54 +220,81 @@ public:
 
 	}
 
+	Ndarray<T,1> operator[](Slice<0> slc){
+		slc.update(this->shape[0]);
+		this->checkIndex(slc);
+		auto newshape = this->shape;
+		auto newstrides = this->strides;
+		int64_t start = slc.start * newstrides[0]; 
+		newshape[0] = ceil((slc.stop - slc.start) / static_cast<double>(slc.step));
+		newstrides[0] = newstrides[0] * slc.step;
+		return Ndarray<T,1>(1,
+								1,
+								start + this->offset, 
+								shared_ptr<T>(this->data, (this->data).get()+start),
+								newshape,
+								newstrides // is start+data accesibly from the smart pointer?
+								);
+	}
 
+	const Ndarray<T,1> operator[](Slice<0> slc) const{
+		return operator[](slc);
+	}
+	
+	operator T(){
+		if (this->size != 1){
+			throw range_error("Only length-1 arrays can be converted to scalars!");
+		}
+		return this->data.get()[0];
+	}
+	
 };
 
-template<typename T, size_t N>
-NdarrayTest<T, N> ndarray(vector<size_t> shape_, function<void(T*)> destructor_=_deleteArray<T>){
-	auto size = product(shape_);
-	return NdarrayTest<T,N>(shape_.size(),
-							size,
-							0,
-							shared_ptr<T>(new T[size], destructor_),
-							shape_,
-							cumulativeProduct(shape_)
-							);
-}
-
-template<typename T, size_t N>
-NdarrayTest<T, N> ndarray(T* data_, vector<size_t> shape_, function<void(T*)> destructor_=_deleteNothing<T>){
-	return NdarrayTest<T,N>(shape_.size(),
-							product(shape_),
-							0,
-							shared_ptr<T>(data_, destructor_),
-							shape_,
-							cumulativeProduct(shape_)
-							);	
-}
-
 // template<typename T, size_t N>
-// Ndarray<T, N> ndarray(vector<size_t> shape_, function<void(T*)> destructor_=_deleteArray<T>){
+// NdarrayTest<T, N> ndarray(vector<size_t> shape_, function<void(T*)> destructor_=_deleteArray<T>){
 // 	auto size = product(shape_);
-// 	return Ndarray<T,N>(shape_.size(),
-// 						size,
-// 						0,
-// 						shared_ptr<T>(new T[size], destructor_),
-// 						shape_,
-// 						cumulativeProduct(shape_)
-// 						);
+// 	return NdarrayTest<T,N>(shape_.size(),
+// 							size,
+// 							0,
+// 							shared_ptr<T>(new T[size], destructor_),
+// 							shape_,
+// 							cumulativeProduct(shape_)
+// 							);
 // }
 
 // template<typename T, size_t N>
-// Ndarray<T, N> ndarray(T* data_, vector<size_t> shape_, function<void(T*)> destructor_=_deleteNothing<T>){
-// 	return Ndarray<T,N>(shape_.size(),
-// 						product(shape_),
-// 						0,
-// 						shared_ptr<T>(data_, destructor_),
-// 						shape_,
-// 						cumulativeProduct(shape_)
-// 						);	
+// NdarrayTest<T, N> ndarray(T* data_, vector<size_t> shape_, function<void(T*)> destructor_=_deleteNothing<T>){
+// 	return NdarrayTest<T,N>(shape_.size(),
+// 							product(shape_),
+// 							0,
+// 							shared_ptr<T>(data_, destructor_),
+// 							shape_,
+// 							cumulativeProduct(shape_)
+// 							);	
 // }
+
+template<typename T, size_t N>
+Ndarray<T, N> ndarray(vector<size_t> shape_, function<void(T*)> destructor_=_deleteArray<T>){
+	auto size = product(shape_);
+	return Ndarray<T,N>(shape_.size(),
+						size,
+						0,
+						shared_ptr<T>(new T[size], destructor_),
+						shape_,
+						cumulativeProduct(shape_)
+						);
+}
+
+template<typename T, size_t N>
+Ndarray<T, N> ndarray(T* data_, vector<size_t> shape_, function<void(T*)> destructor_=_deleteNothing<T>){
+	return Ndarray<T,N>(shape_.size(),
+						product(shape_),
+						0,
+						shared_ptr<T>(data_, destructor_),
+						shape_,
+						cumulativeProduct(shape_)
+						);	
+}
 
 
 
