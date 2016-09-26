@@ -179,10 +179,17 @@ void testIterator(){
 
 int main(){
 
-	testAssignment();
-	testOutOfBounds();
-	testSlicing();
-	testIterator();
+
+	auto test2D = ndarray<size_t,2>({1,1});
+	// test2D.test();
+
+	auto test1D = ndarray<size_t,1>({1});
+	cout << test1D[0].shape << endl;
+	// test1D.test();
+	// testAssignment();
+	// testOutOfBounds();
+	// testSlicing();
+	// testIterator();
 
 	return 0;
 }
