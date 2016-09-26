@@ -73,6 +73,18 @@ T product(vector<T> arg){
 	return out;
 }
 
+template<
+	typename T,
+	typename = typename enable_if<is_arithmetic<T>::value, T>::type
+	>
+vector<T> cumulativeProduct(vector<T> arg){
+	auto out = vector<size_t>(arg.size(), 1);
+	for (int i=arg.size()-2; i>=0 ; --i){
+		out[i] = arg[i+1] * out[i+1]; 
+	}
+	return out;
+}
+
 
 
 #endif /* UTILS_H */

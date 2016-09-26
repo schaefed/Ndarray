@@ -1,6 +1,6 @@
 
 CC=g++
-CFLAGS=-std=c++0x -Wall -g -pedantic
+CFLAGS=-std=c++14 -Wall -g -pedantic
 
 BUILDDIR  = build
 SRCDIR	  = src
