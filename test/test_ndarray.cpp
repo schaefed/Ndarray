@@ -9,10 +9,10 @@
 
 
 void testAssignment(){
-	vector<size_t> shape = {4, 4};
+	vector<size_t> shape = {16, 16};
 	vector<int64_t> basevec  = range(product<size_t>(shape));
-	Ndarray<int64_t, 2> array(basevec.data(), shape);
-
+	auto array = ndarray<int64_t, 2>(basevec.data(), shape);
+	
 	for (uint64_t i=0 ; i<array.shape[0] ; i++){
 		for (uint64_t j=0 ; j< array.shape[0] ; j++){
 			array[i][j] = 42;
@@ -22,9 +22,10 @@ void testAssignment(){
 }
 
 void testOutOfBounds(){
-	vector<size_t> shape = {4, 4};
+	vector<size_t> shape = {16, 16};
 	vector<int64_t> basevec  = range(product<size_t>(shape));
-	Ndarray<int64_t, 2> array(basevec.data(), shape);
+	auto array = ndarray<int64_t, 2>(basevec.data(), shape);
+	
 	try{
 		array[array.shape[0]];
 		assert(false); // exception not thrown!
@@ -35,24 +36,24 @@ void testSlicing(){
 
 	vector<size_t> shape = {16, 16};
 	vector<int64_t> basevec  = range(0, 16*16);
-	Ndarray<int64_t, 2> array(basevec.data(), shape);
+	auto array = ndarray<int64_t, 2>(basevec.data(), shape);
 	Ndarray<int64_t, 1> sliced1;
-	Ndarray<int64_t, 2> sliced2;
+	Ndarray<int64_t, 2> sliced;
 
-	sliced2 = array[Slice<>(0,3)];
-	assert (sliced2.ndim == 2); // Slicing return wrong dimensionality
-	assert (sliced2.shape.size() == 2); // Slicing return wrong shape
-	assert (sliced2.shape[0] == 3); // Slicing return wrong shape
-	assert (sliced2.shape[1] == 16); // Slicing return wrong shape
-	assert (sliced2[0][0] == 0); // Slicing test failed
-	assert (sliced2[0][7] == 7); // Slicing test failed
-	assert (sliced2[0][15] == 15); // Slicing test failed
-	assert (sliced2[1][0] == 16); // Slicing test failed
-	assert (sliced2[1][7] == 23); // Slicing test failed
-	assert (sliced2[1][15] == 31); // Slicing test failed
-	assert (sliced2[2][0] == 32); // Slicing test failed
-	assert (sliced2[2][7] == 39); // Slicing test failed
-	assert (sliced2[2][15] == 47); // Slicing test failed
+	sliced = array[Slice<>(0,3)];
+	assert (sliced.ndim == 2); // Slicing return wrong dimensionality
+	assert (sliced.shape.size() == 2); // Slicing return wrong shape
+	assert (sliced.shape[0] == 3); // Slicing return wrong shape
+	assert (sliced.shape[1] == 16); // Slicing return wrong shape
+	assert (sliced[0][0] == 0); // Slicing test failed
+	assert (sliced[0][7] == 7); // Slicing test failed
+	assert (sliced[0][15] == 15); // Slicing test failed
+	assert (sliced[1][0] == 16); // Slicing test failed
+	assert (sliced[1][7] == 23); // Slicing test failed
+	assert (sliced[1][15] == 31); // Slicing test failed
+	assert (sliced[2][0] == 32); // Slicing test failed
+	assert (sliced[2][7] == 39); // Slicing test failed
+	assert (sliced[2][15] == 47); // Slicing test failed
 
 	sliced1 = array[0][Slice<>(1,8)];
 	assert (sliced1.ndim == 1); // Slicing return wrong dimensionality
@@ -75,7 +76,7 @@ void testSlicing(){
 	assert (sliced1.ndim == 1); // Slicing return wrong dimensionality
 	assert (sliced1.shape.size() == 1); // Slicing return wrong shape
 	assert (sliced1.shape[0] == 5); // Slicing return wrong shape
-	assert (sliced1[0] == 32 + 1); // Slicing test failed	
+	assert (sliced1[0] == 32 + 1); // Slicing test faile	assert (sliced.ndim == 1); // Slicing return wrong dimensionality
 	assert (sliced1[1] == 32 + 3); // Slicing test failed
 	assert (sliced1[4] == 32 + 9); // Slicing test failed
 
@@ -101,16 +102,16 @@ void testSlicing(){
 	assert (sliced2[0][3] == 6);
 	assert (sliced2[0][-1] == 14);
 
-	assert (sliced2[-2][0] == 192);
-	assert (sliced2[-2][3] == 198);
-	assert (sliced2[-2][-1] == 206);
-
+	assert (sliced[-2][0] == 192);
+	assert (sliced[-2][3] == 198);
+	assert (sliced[-2][-1] == 206);
 }
 
 void testIterator(){
 	vector<size_t> shape = {4, 4};
 	vector<int64_t> basevec  = range(product<size_t>(shape));
-	Ndarray<int64_t, 2> array(basevec.data(), shape);
+	auto array = ndarray<int64_t, 2>(basevec.data(), shape);
+	Ndarray<int64_t,2> test;
 
 	auto tester = [](auto array, vector<int64_t> check){
 		int64_t i = 0;
@@ -129,9 +130,9 @@ void testIterator(){
 
 int main(){
 
-	testSlicing();
-	testAssignment();
-	testOutOfBounds();
+	// testAssignment();
+	// testOutOfBounds();
+	// testSlicing();
 	testIterator();
 
 	return 0;
