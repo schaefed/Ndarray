@@ -77,7 +77,9 @@ public:
 	}
 
 	NdarrayBase<T,N>& operator=(NdarrayBase<T,N> that){
-		/* copy asignment operator*/
+		/* copy asignment operator
+		   obsolete when array value assignment is implemeted
+		 */
 		swap(*this, that);
 		return *this;
 	}
@@ -92,6 +94,16 @@ public:
 				e = other;
 			});
 	}
+
+	// template<size_t M>
+	// void operator=(const NdarrayBase<T,M>& other){
+	// 	/*
+	// 	  Asignment is handled here and not in operator[]. This seems to
+	// 	  be an easy way to allow asignments of higher complexity
+	// 	  (i.e. broadcasting)
+	// 	 */
+	// }
+
 
 	void map(function<void(T&)> func){
 		for (auto& e: (*this)){
