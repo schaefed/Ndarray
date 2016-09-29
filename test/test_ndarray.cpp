@@ -12,13 +12,19 @@ void testAssignment(){
 	vector<size_t> shape = {16, 16};
 	vector<int64_t> basevec  = range(product<size_t>(shape));
 	auto array = ndarray<int64_t, 2>(basevec.data(), shape);
-	
-	for (uint64_t i=0 ; i<array.shape[0] ; i++){
-		for (uint64_t j=0 ; j< array.shape[0] ; j++){
-			array[i][j] = 42;
-			assert(array[i][0] == 42); // Assignment failed!
-		}
+
+	array = 21;
+	for (auto e: array){
+		assert(e == 21); // array assignment failed!
 	}
+	
+	array[Slice<1>(0,-1,2)] = 42;
+	bool tmp = true;
+	for (auto e: array){
+		assert ( e = (tmp) ? 42 : 21); // array assignment failed
+		tmp = not tmp;
+	}
+	
 }
 
 void testOutOfBounds(){
@@ -115,7 +121,7 @@ void testIterator(){
 
 	auto tester = [](auto array, vector<int64_t> check){
 		int64_t i = 0;
-		for (auto e: array){
+		for (auto& e: array){
 			assert (e == check[i++]); // Wrong iteration element
 		}
 	};

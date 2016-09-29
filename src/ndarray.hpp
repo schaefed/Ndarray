@@ -88,12 +88,16 @@ public:
 		  be an easy way to allow asignments of higher complexity
 		  (i.e. broadcasting)
 		 */
-		if (ndim > 1){
-			throw range_error("Assigning to a Ndarray is not supported yet!");
-		}
-		data.get()[0] = other;
+		map([other](T& e) {
+				e = other;
+			});
 	}
 
+	void map(function<void(T&)> func){
+		for (auto& e: (*this)){
+			func(e);
+		}
+	}
 	
 	friend void swap(NdarrayBase<T,N>& first, NdarrayBase<T,N>& second){
 		swap(first.ndim, second.ndim);
@@ -188,8 +192,6 @@ public:
 							   newstrides 
 							   );
 	}
-
-
 };
 
 

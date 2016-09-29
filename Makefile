@@ -14,7 +14,6 @@ all: clean test
 test: $(TESTS)
 	$(foreach test,$(TESTS),./$(test);)
 
-
 $(TESTS): $(TESTDIR)/%.test : $(TESTDIR)/%.cpp
 	$(CC) -I$(SRCDIR) $(CFLAGS) $< -o $@
 
