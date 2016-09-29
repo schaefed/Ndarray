@@ -112,9 +112,9 @@ public:
 			throw IndexError("Invalid index dimension!");
 		}
 		if ((idx < 0) or (idx >= static_cast<int64_t>(shape[dim]))) {
-			cout << "Offending index: " << idx << endl;
-			cout << "Dimension: " << dim << endl;
-			cout << "Dimension length: " << shape[dim] << endl;
+			// cout << "Offending index: " << idx << endl;
+			// cout << "Dimension: " << dim << endl;
+			// cout << "Dimension length: " << shape[dim] << endl;
 			throw IndexError("Index out of bounds");
 		}
 	}
