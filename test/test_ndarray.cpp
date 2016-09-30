@@ -134,6 +134,30 @@ void testIterator(){
 		   );
 }
 
+void testBroadcasting(){
+	vector<size_t> shape = {8, 8};
+	vector<size_t> strides = {0, 1};
+	vector<int64_t> basevec  = range(shape[0]);
+	auto array = ndarray<int64_t, 2>(basevec.data(), shape, strides);
+	array[1];
+	// array[3];
+	// cout << array[1][3] << endl;
+	// cout << "array.strides: " << array.shape << endl;
+
+	for (auto i=0; i<shape[0]; i++){
+		for (auto j=0; j<shape[1]; j++){
+			assert (array[i].data.get()[j] == basevec[j]); // broadcasting incorrect
+			assert (array[i][j] == basevec[j]); // broadcasting incorrect
+		}
+	}
+
+	// for (auto e: array){
+	// 	cout << e << endl;
+
+	// }
+	
+}
+
 int main(){
 
 	testAssignment();
@@ -141,5 +165,6 @@ int main(){
 	testSlicing();
 	testIterator();
 
+	testBroadcasting();
 	return 0;
 }

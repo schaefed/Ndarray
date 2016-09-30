@@ -85,6 +85,20 @@ vector<T> cumulativeProduct(vector<T> arg){
 	return out;
 }
 
+template<
+	typename T,
+	typename = typename enable_if<is_integral<T>::value, T>::type
+	>
+vector<T> filterZeros(vector<T>& arg){
+	vector<T> out; // = vector<T>();
+	for (auto e: arg){
+		if (e != 0){
+			out.push_back(e);
+		}
+	}
+	return out;
+}
+
 
 
 #endif /* UTILS_H */

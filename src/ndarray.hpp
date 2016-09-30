@@ -66,14 +66,22 @@ public:
 		return iterator(&data.get()[0], shape, strides);
 	}
 	iterator end(){
-		return iterator(&data.get()[shape[0] * strides[0]], shape, strides);
+		// cout << shape << endl;
+		// cout << strides << endl;
+		// cout << filterZeros(strides) << endl;
+		// cout << end << endl;
+		auto end = shape[0] * filterZeros(strides)[0];
+		return iterator(&data.get()[end], shape, strides);
+		// return iterator(&data.get()[shape[0] * strides[0]], shape, strides);
 	}
 
 	const_iterator cbegin(){
 		return iterator(&data.get()[0], shape, strides);
 	}
 	const_iterator cend(){
-		return iterator(&data.get()[shape[0] * strides[0]], shape, strides);
+		auto end = shape[0] * filterZeros(strides)[0];
+		return iterator(&data.get()[end], shape, strides);
+		// return iterator(&data.get()[shape[0] * strides[0]], shape, strides);
 	}
 
 	NdarrayBase<T,N>& operator=(NdarrayBase<T,N> that){
@@ -189,6 +197,7 @@ public:
 
 	
 	Ndarray<T,N-1> operator[](int64_t idx){
+		// cout << "N=N -> Index: " << idx << endl;
 		if (idx < 0){
 			idx += this->shape[0];
 		}
@@ -196,6 +205,11 @@ public:
 		vector<size_t> newshape (&(this->shape[1]), &(this->shape[this->ndim]));
 		vector<size_t> newstrides (&(this->strides[1]), &(this->strides[this->ndim]));
 		int64_t start = idx * this->strides[0];
+		// cout << "start: " << start << endl;
+		// cout << "offset: " << this->offset << endl;
+		// cout << "newshape: " << newshape << endl;
+		// cout << "newstrides: " << newstrides << endl;
+
 		return Ndarray<T, N-1>(N-1,
 							   product(newshape),
 							   start + this->offset,
@@ -215,6 +229,7 @@ public:
 	using NdarrayBase<T,1>::operator= ;
 
 	Ndarray<T,1> operator[](int64_t idx){
+		// cout << "N=1 -> Index: " << idx << endl;
 		if (idx < 0){
 			idx += (this->shape)[0];
 		}
@@ -263,29 +278,6 @@ public:
 	
 };
 
-// template<typename T, size_t N>
-// NdarrayTest<T, N> ndarray(vector<size_t> shape_, function<void(T*)> destructor_=_deleteArray<T>){
-// 	auto size = product(shape_);
-// 	return NdarrayTest<T,N>(shape_.size(),
-// 							size,
-// 							0,
-// 							shared_ptr<T>(new T[size], destructor_),
-// 							shape_,
-// 							cumulativeProduct(shape_)
-// 							);
-// }
-
-// template<typename T, size_t N>
-// NdarrayTest<T, N> ndarray(T* data_, vector<size_t> shape_, function<void(T*)> destructor_=_deleteNothing<T>){
-// 	return NdarrayTest<T,N>(shape_.size(),
-// 							product(shape_),
-// 							0,
-// 							shared_ptr<T>(data_, destructor_),
-// 							shape_,
-// 							cumulativeProduct(shape_)
-// 							);	
-// }
-
 template<typename T, size_t N>
 Ndarray<T, N> ndarray(vector<size_t> shape_, function<void(T*)> destructor_=_deleteArray<T>){
 	auto size = product(shape_);
@@ -306,6 +298,17 @@ Ndarray<T, N> ndarray(T* data_, vector<size_t> shape_, function<void(T*)> destru
 						shared_ptr<T>(data_, destructor_),
 						shape_,
 						cumulativeProduct(shape_)
+						);	
+}
+
+template<typename T, size_t N>
+Ndarray<T, N> ndarray(T* data_, vector<size_t> shape_, vector<size_t> strides_, function<void(T*)> destructor_=_deleteNothing<T>){
+	return Ndarray<T,N>(shape_.size(),
+						product(shape_),
+						0,
+						shared_ptr<T>(data_, destructor_),
+						shape_,
+						strides_
 						);	
 }
 

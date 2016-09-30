@@ -14,18 +14,40 @@ private:
 	const vector<size_t> &shape;
 	const vector<size_t> &strides;
 	
-	size_t nextIndex(){
+	// size_t nextIndex(){
+	// 	// is there a less complex solution?
+	// 	index++;
+	// 	auto idx = index;
+	// 	auto i = shape.size()-1;
+	// 	auto accum = 0;
+	// 	while ((i>0) and (idx%shape[i] == 0)){
+	// 		idx /= shape[i];
+	// 		accum += ((shape[i]-1) * strides[i]);
+	// 		i--;
+	// 	}
+
+	// 	// cout << "accum: " << accum << endl;
+	// 	// cout << "strides[i]: " << strides[i] << endl;
+	// 	// cout << "nextIndex: " << strides[i] - accum << endl;
+	// 	return strides[i] - accum;
+	// }
+
+	int64_t nextIndex(){
 		// is there a less complex solution?
 		index++;
-		auto idx = index;
-		auto i = shape.size()-1;
-		auto accum = 0;
+		int64_t idx = index;
+		int64_t i = shape.size()-1;
+		int64_t accum = 0;
 		while ((i>0) and (idx%shape[i] == 0)){
 			idx /= shape[i];
 			accum += ((shape[i]-1) * strides[i]);
 			i--;
 		}
-		return strides[i] - accum;
+
+		// cout << "accum: " << accum << endl;
+		// cout << "strides[i]: " << strides[i] << endl;
+		// cout << "nextIndex: " << static_cast<int64_t>(strides[i]) - accum << endl;
+		return static_cast<int64_t>(strides[i]) - accum;
 	}
 
 public:
