@@ -19,7 +19,7 @@ freed when no other Ndarray objects points into the data.
 This library is work in progress and only the most basic things are implemented, notably:
 - Data sharing.
 - Subsripting and slicing (including discontinuous) along an axis and/or elements. 
-- Assignment to single Ndarray elements
+- Scalar assignment to Ndarrays and elements.
 
 # Future Work
 The most urgent things to implemented are in this order:

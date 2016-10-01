@@ -6,7 +6,7 @@
 
 using namespace std;
 
-template<typename T>
+template<typename T, size_t N>
 class DataIterator : public iterator<forward_iterator_tag, T, ptrdiff_t, T*, T&>{
 
 private:
@@ -14,8 +14,8 @@ private:
 	T* buffer;
 	T* pos;
 	size_t iter;
-	const vector<size_t> &shape;
-	const vector<size_t> &strides;
+	const array<size_t, N> &shape;
+	const array<size_t, N> &strides;
 
 	void increment(){
 		size_t inc = 0;
@@ -34,24 +34,24 @@ private:
 
 public:
 
-	DataIterator(T* buffer_, const vector<size_t> &shape_, const vector<size_t> &strides_):
+	DataIterator(T* buffer_, const array<size_t, N> &shape_, const array<size_t, N> &strides_):
 		buffer(buffer_), pos(&buffer_[0]), iter(0), shape(shape_), strides(strides_){
 	}
 	
-	bool operator==(const DataIterator<T>& iter) const {
+	bool operator==(const DataIterator<T, N>& iter) const {
 		return (pos == iter.pos);
 	}
 
-	bool operator!=(const DataIterator<T>& iter) const {
+	bool operator!=(const DataIterator<T, N>& iter) const {
 		return (pos != iter.pos);
 	}
 
-	DataIterator<T>& operator++(){
+	DataIterator<T, N>& operator++(){
 		increment();
 		return (*this);
 	}
 
-	DataIterator<T> operator++(const int){
+	DataIterator<T, N> operator++(const int){
 		auto out(*this);
 		increment();
 		return out;

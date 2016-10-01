@@ -29,6 +29,19 @@ ostream& operator<< (ostream& stream, vector<T>shape ) {
 	return stream;
 }
 
+template<typename T, size_t N>
+ostream& operator<< (ostream& stream, array<T, N>shape ) {
+	stream << '(';
+	for (size_t i = 0; i < shape.size() ; i++){
+		stream << shape[i];
+		if (i < shape.size() - 1){
+			stream << ", ";
+		}
+	}
+	stream << ')';
+	return stream;
+}
+
 vector<int64_t> range(int64_t stop){
 	vector<int64_t> out(stop);
 	int64_t i = 0;
@@ -52,9 +65,28 @@ vector<int64_t> range(int64_t start, int64_t stop, int64_t step=1){
 	return out;
 }
 
+
+// template<typename T, size_t N, size_t M>
+// array<T, N> subarray(array<T, M> arr, size_t idx){
+// 	array<T, N> out;
+// 	for (auto i=0; i<N; i++){
+// 		out[0] = arr[idx+i];
+// 	}
+// 	return out;
+// }
+
 template<typename T>
 vector<T> concat(const initializer_list<vector<T>> args){
 	vector<T> out (vector<T>(0));
+	for (auto a: args){
+		out.insert(out.end(), a.begin(), a.end());
+	}
+	return out;
+}
+
+template<typename T, size_t N>
+vector<T> concat(const initializer_list<array<T, N>> args){
+	array<T, N> out (array<T, N>(0));
 	for (auto a: args){
 		out.insert(out.end(), a.begin(), a.end());
 	}
@@ -72,6 +104,18 @@ T product(const vector<T> arg){
 	}
 	return out;
 }
+template<
+	typename T, size_t N,
+	typename = typename enable_if<is_arithmetic<T>::value, T>::type
+	>
+T product(const array<T, N> arg){
+	T out = 1;
+	for (auto x: arg){
+		out *= x;
+	}
+	return out;
+}
+
 
 template<
 	typename T,
@@ -86,10 +130,36 @@ vector<T> cumulativeProduct(const vector<T> arg){
 }
 
 template<
+	typename T, size_t N,
+	typename = typename enable_if<is_arithmetic<T>::value, T>::type
+	>
+array<T, N> cumulativeProduct(const array<T, N> arg){
+	array<size_t, N> out;
+	for (int i=arg.size()-2; i>=0 ; --i){
+		out[i] = arg[i+1] * out[i+1]; 
+	}
+	return out;
+}
+
+template<
 	typename T,
 	typename = typename enable_if<is_integral<T>::value, T>::type
 	>
 vector<T> filterZeros(const vector<T>& arg) {
+	vector<T> out; // = vector<T>();
+	for (auto e: arg){
+		if (e != 0){
+			out.push_back(e);
+		}
+	}
+	return out;
+}
+
+template<
+	typename T, size_t N,
+	typename = typename enable_if<is_integral<T>::value, T>::type
+	>
+vector<T> filterZeros(const array<T, N>& arg) {
 	vector<T> out; // = vector<T>();
 	for (auto e: arg){
 		if (e != 0){

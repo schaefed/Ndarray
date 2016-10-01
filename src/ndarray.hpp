@@ -2,7 +2,7 @@
 #define NDARRAY_H
 
 #include <iostream>
-#include <vector>
+#include <array>
 #include <functional>
 #include <memory>
 #include <math.h>
@@ -20,39 +20,35 @@ private:
 
 public:
 	
-	typedef DataIterator<T>	iterator;
-	typedef DataIterator<const T> const_iterator;
+	typedef DataIterator<T, N>	iterator;
+	typedef DataIterator<const T, N> const_iterator;
 	
-	size_t ndim;
 	size_t size;
 	size_t offset;
 	shared_ptr<T> data;
-	vector<size_t> shape;
-	vector<size_t> strides;
+	array<size_t, N> shape;
+	array<size_t, N> strides;
 
-	NdarrayBase(size_t ndim_, size_t size_, size_t offset_, shared_ptr<T> data_,
-			vector<size_t> shape_, vector<size_t> strides_):
-		ndim(ndim_), size(size_), offset(offset_),
+	NdarrayBase(size_t size_, size_t offset_, shared_ptr<T> data_,
+				array<size_t, N> shape_, array<size_t, N> strides_):
+		size(size_), offset(offset_),
 		data(data_), shape(shape_), strides(strides_)
 	{
-		checkDimensions();
 	}
 
 	NdarrayBase():
-		ndim(0), size(0), offset(0),
-		data(shared_ptr<T>(nullptr)), shape(vector<size_t>()), strides(vector<size_t>())
+		size(0), offset(0),
+		data(shared_ptr<T>(nullptr)), shape(array<size_t, N>()), strides(array<size_t, N>())
 	{}
 
 	NdarrayBase(const NdarrayBase<T,N>& other):
 		/* copy constructor */
-		ndim(other.ndim),
 		size(other.size),
 		offset(other.offset),
 		data(other.data),
 		shape(other.shape),
 		strides(other.strides)
 	{
-		checkDimensions();
 	}
 	
 	NdarrayBase(NdarrayBase<T,N>&& other):
@@ -66,13 +62,8 @@ public:
 		return iterator(&data.get()[0], shape, strides);
 	}
 	iterator end(){
-		// cout << shape << endl;
-		// cout << strides << endl;
-		// cout << filterZeros(strides) << endl;
-		// cout << end << endl;
 		auto end = shape[0] * filterZeros(strides)[0];
 		return iterator(&data.get()[end], shape, strides);
-		// return iterator(&data.get()[shape[0] * strides[0]], shape, strides);
 	}
 
 	const_iterator cbegin(){
@@ -81,7 +72,6 @@ public:
 	const_iterator cend(){
 		auto end = shape[0] * filterZeros(strides)[0];
 		return iterator(&data.get()[end], shape, strides);
-		// return iterator(&data.get()[shape[0] * strides[0]], shape, strides);
 	}
 
 	NdarrayBase<T,N>& operator=(NdarrayBase<T,N> that){
@@ -120,7 +110,6 @@ public:
 	}
 	
 	friend void swap(NdarrayBase<T,N>& first, NdarrayBase<T,N>& second){
-		swap(first.ndim, second.ndim);
 		swap(first.size, second.size);
 		swap(first.offset, second.offset);
 		swap(first.shape, second.shape);
@@ -129,10 +118,10 @@ public:
 	}
 
 	void checkIndex(int64_t idx, uint64_t dim){
-		if (ndim < 1){
+		if (N < 1){
 			throw IndexError("Too many indices!");
 		}
-		if (dim > (ndim-1)){
+		if (dim > (N-1)){
 			throw IndexError("Invalid index dimension!");
 		}
 		if ((idx < 0) or (idx >= static_cast<int64_t>(shape[dim]))) {
@@ -151,12 +140,7 @@ public:
 		// checkIndex(slc.stop, DIM);
 	}
 
-	void checkDimensions(){
-		if (static_cast<int64_t>(ndim) != N){
-			throw DimensionError("Invalid dimensions!");
-		}
-	}
-		
+	
 };
 
 
@@ -170,7 +154,8 @@ public:
 	template<size_t DIM>
 	Ndarray<T,N> operator[](Slice<DIM> slc){
 
-		if (DIM > this->ndim){
+		// should be statically asserted
+		if (DIM > N){
 			throw DimensionError("Invalid slicing dimension");
 		}
 
@@ -181,8 +166,7 @@ public:
 		int64_t start = slc.start * newstrides[DIM]; 
 		newshape[DIM] = ceil((slc.stop - slc.start) / static_cast<double>(slc.step));
 		newstrides[DIM] = newstrides[DIM] * slc.step;
-		return Ndarray<T,N>(N,
-							product(newshape),
+		return Ndarray<T,N>(product(newshape),
 							start + this->offset, 
 							shared_ptr<T>(this->data, (this->data).get()+start),
 							newshape,
@@ -202,16 +186,26 @@ public:
 			idx += this->shape[0];
 		}
 		this->checkIndex(idx,0);
-		vector<size_t> newshape (&(this->shape[1]), &(this->shape[this->ndim]));
-		vector<size_t> newstrides (&(this->strides[1]), &(this->strides[this->ndim]));
+		
+		// array<size_t, N-1> newshape (&(this->shape[1]), &(this->shape[this->ndim]));
+		// array<size_t, N-1> newstrides (&(this->strides[1]), &(this->strides[this->ndim]));
+		array<size_t, N-1> newshape;
+		array<size_t, N-1> newstrides;
+		for (size_t i=0; i<N-1; i++){
+			newshape[i] = this->shape[i+1];
+			newstrides[i] = this->strides[i+1];
+		}
+		
+		// cout << this->shape << endl;
+		// cout << newshape << endl;
+		// cout << "-------\n";
+		// cout << this->strides << endl;
+		// cout << newstrides << endl;
+		// array<size_t, N-1> newshape = subarray(this->shape, 1);
+		// array<size_t, N-1> newstrides = subarray(this->strides, 1);
 		int64_t start = idx * this->strides[0];
-		// cout << "start: " << start << endl;
-		// cout << "offset: " << this->offset << endl;
-		// cout << "newshape: " << newshape << endl;
-		// cout << "newstrides: " << newstrides << endl;
 
-		return Ndarray<T, N-1>(N-1,
-							   product(newshape),
+		return Ndarray<T, N-1>(product(newshape),
 							   start + this->offset,
 							   shared_ptr<T>(this->data, this->data.get()+start),
 							   newshape,
@@ -236,11 +230,10 @@ public:
 		this->checkIndex(idx, 0);
 		int64_t start = idx * this->strides[0];
 		return Ndarray<T, 1>(1,
-								 1,
-								 start + this->offset,
-								 shared_ptr<T>(this->data, this->data.get()+start),
-			{1}, {1}
-								);
+							 start + this->offset,
+							 shared_ptr<T>(this->data, this->data.get()+start),
+							 {1}, {1}
+							 );
 	}
 
 	const Ndarray<T,1> operator[](int64_t idx) const{
@@ -257,12 +250,11 @@ public:
 		newshape[0] = ceil((slc.stop - slc.start) / static_cast<double>(slc.step));
 		newstrides[0] = newstrides[0] * slc.step;
 		return Ndarray<T,1>(1,
-								1,
-								start + this->offset, 
-								shared_ptr<T>(this->data, (this->data).get()+start),
-								newshape,
-								newstrides // is start+data accesibly from the smart pointer?
-								);
+							start + this->offset, 
+							shared_ptr<T>(this->data, (this->data).get()+start),
+							newshape,
+							newstrides // is start+data accesibly from the smart pointer?
+							);
 	}
 
 	const Ndarray<T,1> operator[](Slice<0> slc) const{
@@ -279,10 +271,9 @@ public:
 };
 
 template<typename T, size_t N>
-Ndarray<T, N> ndarray(vector<size_t> shape_, function<void(T*)> destructor_=_deleteArray<T>){
+Ndarray<T, N> ndarray(array<size_t, N> shape_, function<void(T*)> destructor_=_deleteArray<T>){
 	auto size = product(shape_);
-	return Ndarray<T,N>(shape_.size(),
-						size,
+	return Ndarray<T,N>(size,
 						0,
 						shared_ptr<T>(new T[size], destructor_),
 						shape_,
@@ -291,9 +282,8 @@ Ndarray<T, N> ndarray(vector<size_t> shape_, function<void(T*)> destructor_=_del
 }
 
 template<typename T, size_t N>
-Ndarray<T, N> ndarray(T* data_, vector<size_t> shape_, function<void(T*)> destructor_=_deleteNothing<T>){
-	return Ndarray<T,N>(shape_.size(),
-						product(shape_),
+Ndarray<T, N> ndarray(T* data_, array<size_t, N> shape_, function<void(T*)> destructor_=_deleteNothing<T>){
+	return Ndarray<T,N>(product(shape_),
 						0,
 						shared_ptr<T>(data_, destructor_),
 						shape_,
@@ -302,19 +292,13 @@ Ndarray<T, N> ndarray(T* data_, vector<size_t> shape_, function<void(T*)> destru
 }
 
 template<typename T, size_t N>
-Ndarray<T, N> ndarray(T* data_, vector<size_t> shape_, vector<size_t> strides_, function<void(T*)> destructor_=_deleteNothing<T>){
-	return Ndarray<T,N>(shape_.size(),
-						product(shape_),
+Ndarray<T, N> ndarray(T* data_, array<size_t, N> shape_, array<size_t, N> strides_, function<void(T*)> destructor_=_deleteNothing<T>){
+	return Ndarray<T,N>(product(shape_),
 						0,
 						shared_ptr<T>(data_, destructor_),
 						shape_,
 						strides_
 						);	
 }
-
-
-
-
-
 
 #endif /* NDARRAY_H */
