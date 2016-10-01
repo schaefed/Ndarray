@@ -53,7 +53,7 @@ vector<int64_t> range(int64_t start, int64_t stop, int64_t step=1){
 }
 
 template<typename T>
-vector<T> concat(initializer_list<vector<T>> args){
+vector<T> concat(const initializer_list<vector<T>> args){
 	vector<T> out (vector<T>(0));
 	for (auto a: args){
 		out.insert(out.end(), a.begin(), a.end());
@@ -65,7 +65,7 @@ template<
 	typename T,
 	typename = typename enable_if<is_arithmetic<T>::value, T>::type
 	>
-T product(vector<T> arg){
+T product(const vector<T> arg){
 	T out = 1;
 	for (auto x: arg){
 		out *= x;
@@ -77,7 +77,7 @@ template<
 	typename T,
 	typename = typename enable_if<is_arithmetic<T>::value, T>::type
 	>
-vector<T> cumulativeProduct(vector<T> arg){
+vector<T> cumulativeProduct(const vector<T> arg){
 	auto out = vector<size_t>(arg.size(), 1);
 	for (int i=arg.size()-2; i>=0 ; --i){
 		out[i] = arg[i+1] * out[i+1]; 
@@ -89,7 +89,7 @@ template<
 	typename T,
 	typename = typename enable_if<is_integral<T>::value, T>::type
 	>
-vector<T> filterZeros(vector<T>& arg){
+vector<T> filterZeros(const vector<T>& arg) {
 	vector<T> out; // = vector<T>();
 	for (auto e: arg){
 		if (e != 0){
@@ -98,7 +98,5 @@ vector<T> filterZeros(vector<T>& arg){
 	}
 	return out;
 }
-
-
 
 #endif /* UTILS_H */

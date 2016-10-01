@@ -81,14 +81,25 @@ def indexDimension(array, idx):
     #     i -= 1
     # return strides[i] - acc
    
+def unravel(array, idx):
+    tmp = idx
+    out = []
+    for d in array.shape[:-1]:
+        out.append(tmp//d)
+        tmp = tmp%d
+    
+    out.append(tmp)
+    return tuple(out)
+    
 
 if __name__== "__main__":
 
     shape = (16, 16)
     x = np.arange(np.prod(shape)).reshape(shape)
     y = x[slice(0,-1,2), slice(0,-1,2)]
-    print y
-    print arrayStrides(y)
+    print unravel(x[0], 16)
+    # print y
+    # print arrayStrides(y)
     # print x[slice(0,4,2)]
     # print x
     # print nextIndex(x[::2,::2],1)

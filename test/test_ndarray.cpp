@@ -121,7 +121,10 @@ void testIterator(){
 
 	auto tester = [](auto array, vector<int64_t> check){
 		int64_t i = 0;
-		for (auto& e: array){
+		// cout << "shape: " << array.shape << endl;
+		// cout << "strides: " << array.strides << endl;
+		for (auto e: array){
+			// cout << e  << " vs. " << check[i] << endl;
 			assert (e == check[i++]); // Wrong iteration element
 		}
 	};
@@ -139,22 +142,21 @@ void testBroadcasting(){
 	vector<size_t> strides = {0, 1};
 	vector<int64_t> basevec  = range(shape[0]);
 	auto array = ndarray<int64_t, 2>(basevec.data(), shape, strides);
-	array[1];
-	// array[3];
-	// cout << array[1][3] << endl;
-	// cout << "array.strides: " << array.shape << endl;
 
-	for (auto i=0; i<shape[0]; i++){
-		for (auto j=0; j<shape[1]; j++){
+	for (size_t i=0; i<shape[0]; i++){
+		for (size_t j=0; j<shape[1]; j++){
 			assert (array[i].data.get()[j] == basevec[j]); // broadcasting incorrect
 			assert (array[i][j] == basevec[j]); // broadcasting incorrect
 		}
 	}
 
-	// for (auto e: array){
-	// 	cout << e << endl;
-
-	// }
+	// should be moved to testIteration at one point in time...
+	size_t idx = 0;
+	for (auto e: array){
+		idx %= array.shape[0];
+		assert(e == basevec[idx]);
+		idx++;
+	}
 	
 }
 
@@ -164,7 +166,7 @@ int main(){
 	testOutOfBounds();
 	testSlicing();
 	testIterator();
-
 	testBroadcasting();
+
 	return 0;
 }
