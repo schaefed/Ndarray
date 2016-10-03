@@ -17,11 +17,11 @@ void _deleteNothing(T* pointer){
 }
 
 template<typename T>
-ostream& operator<< (ostream& stream, vector<T>shape ) {
+ostream& operator<< (ostream& stream, vector<T>arg ) {
 	stream << '(';
-	for (size_t i = 0; i < shape.size() ; i++){
-		stream << shape[i];
-		if (i < shape.size() - 1){
+	for (size_t i = 0; i < arg.size() ; i++){
+		stream << arg[i];
+		if (i < arg.size() - 1){
 			stream << ", ";
 		}
 	}
@@ -30,11 +30,11 @@ ostream& operator<< (ostream& stream, vector<T>shape ) {
 }
 
 template<typename T, size_t N>
-ostream& operator<< (ostream& stream, array<T, N>shape ) {
+ostream& operator<< (ostream& stream, array<T, N>arg ) {
 	stream << '(';
-	for (size_t i = 0; i < shape.size() ; i++){
-		stream << shape[i];
-		if (i < shape.size() - 1){
+	for (size_t i = 0; i < arg.size() ; i++){
+		stream << arg[i];
+		if (i < arg.size() - 1){
 			stream << ", ";
 		}
 	}
@@ -66,14 +66,14 @@ vector<int64_t> range(int64_t start, int64_t stop, int64_t step=1){
 }
 
 
-// template<typename T, size_t N, size_t M>
-// array<T, N> subarray(array<T, M> arr, size_t idx){
-// 	array<T, N> out;
-// 	for (auto i=0; i<N; i++){
-// 		out[0] = arr[idx+i];
-// 	}
-// 	return out;
-// }
+template<typename T, size_t N, size_t M>
+array<T, N> subarray(array<T, M> arr, size_t offset=0){
+	array<T, N> out;
+	for (size_t i=0; i<N; i++){
+		out[i] = arr[offset+i];
+	}
+	return out;
+}
 
 template<typename T>
 vector<T> concat(const initializer_list<vector<T>> args){
@@ -122,8 +122,9 @@ template<
 	typename = typename enable_if<is_arithmetic<T>::value, T>::type
 	>
 vector<T> cumulativeProduct(const vector<T> arg){
-	auto out = vector<size_t>(arg.size(), 1);
-	for (int i=arg.size()-2; i>=0 ; --i){
+	/* This name is misleading, as the function returns standard strides for a given shape */
+	auto out = vector<T>(arg.size(), 1);
+	for (int64_t i=arg.size()-2; i>=0 ; --i){
 		out[i] = arg[i+1] * out[i+1]; 
 	}
 	return out;
@@ -134,8 +135,10 @@ template<
 	typename = typename enable_if<is_arithmetic<T>::value, T>::type
 	>
 array<T, N> cumulativeProduct(const array<T, N> arg){
-	array<size_t, N> out;
-	for (int i=arg.size()-2; i>=0 ; --i){
+	/* This name is misleading, as the function returns standard strides for a given shape */
+	array<T, N> out;
+	out.back() = 1;
+	for (int64_t i=arg.size()-2; i>=0 ; --i){
 		out[i] = arg[i+1] * out[i+1]; 
 	}
 	return out;

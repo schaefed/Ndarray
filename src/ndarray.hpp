@@ -14,7 +14,9 @@
 
 using namespace std;
 
-template<typename T, int N> class NdarrayBase{
+template<typename T, size_t N> class Ndarray;
+
+template<typename T, size_t N> class NdarrayBase {
 		
 private:
 
@@ -31,14 +33,19 @@ public:
 
 	NdarrayBase(size_t size_, size_t offset_, shared_ptr<T> data_,
 				array<size_t, N> shape_, array<size_t, N> strides_):
-		size(size_), offset(offset_),
-		data(data_), shape(shape_), strides(strides_)
-	{
-	}
+		size(size_),
+		offset(offset_),
+		data(data_),
+		shape(shape_),
+		strides(strides_)
+	{}
 
 	NdarrayBase():
-		size(0), offset(0),
-		data(shared_ptr<T>(nullptr)), shape(array<size_t, N>()), strides(array<size_t, N>())
+		size(0),
+		offset(0),
+		data(shared_ptr<T>(nullptr)),
+		shape(array<size_t, N>()),
+		strides(array<size_t, N>())
 	{}
 
 	NdarrayBase(const NdarrayBase<T,N>& other):
@@ -48,8 +55,7 @@ public:
 		data(other.data),
 		shape(other.shape),
 		strides(other.strides)
-	{
-	}
+	{}
 	
 	NdarrayBase(NdarrayBase<T,N>&& other):
 		/* move constructor */
@@ -125,9 +131,6 @@ public:
 			throw IndexError("Invalid index dimension!");
 		}
 		if ((idx < 0) or (idx >= static_cast<int64_t>(shape[dim]))) {
-			// cout << "Offending index: " << idx << endl;
-			// cout << "Dimension: " << dim << endl;
-			// cout << "Dimension length: " << shape[dim] << endl;
 			throw IndexError("Index out of bounds");
 		}
 	}
@@ -140,7 +143,31 @@ public:
 		// checkIndex(slc.stop, DIM);
 	}
 
+	size_t updateIndex(int64_t idx, size_t dim){
+		if (idx < 0){
+			idx += this->shape[dim];
+		}
+		return idx;
+	}
 	
+	// template<size_t M>
+	// Ndarray<T, M> broadcastTo(array<size_t, M> shape){
+	// 	static_assert(N < M, "Can only broadcast to higher dimensionality!");
+
+	// 	auto it = strides.end();
+	// 	array<size_t, M> strides;
+
+	// 	for (int64_t i=M; i>=0; --i){
+	// 		if (this->shape[i] == 1){
+	// 			strides[i] = 0;
+	// 		} else if (shape[i] == this->shape[i]){
+	// 			strides[i] = *(--it);
+	// 		} else {
+	// 			throw DimensionError("Operands could not be braodcast together");
+	// 		}
+	// 	}
+	// 	return Ndarray<T, M>(product(shape), this->offset, this->data, shape, strides);
+	// }
 };
 
 
@@ -153,14 +180,11 @@ public:
 
 	template<size_t DIM>
 	Ndarray<T,N> operator[](Slice<DIM> slc){
-
-		// should be statically asserted
-		if (DIM > N){
-			throw DimensionError("Invalid slicing dimension");
-		}
-
+		static_assert(DIM < N, "Invalid index dimension!");
+		
 		slc.update(this->shape[DIM]);
 		this->checkIndex(slc);
+
 		auto newshape = this->shape;
 		auto newstrides = this->strides;
 		int64_t start = slc.start * newstrides[DIM]; 
@@ -181,35 +205,18 @@ public:
 
 	
 	Ndarray<T,N-1> operator[](int64_t idx){
-		// cout << "N=N -> Index: " << idx << endl;
-		if (idx < 0){
-			idx += this->shape[0];
-		}
-		this->checkIndex(idx,0);
+
+		idx = this->updateIndex(idx, 0);
+		this->checkIndex(idx, 0);
 		
-		// array<size_t, N-1> newshape (&(this->shape[1]), &(this->shape[this->ndim]));
-		// array<size_t, N-1> newstrides (&(this->strides[1]), &(this->strides[this->ndim]));
-		array<size_t, N-1> newshape;
-		array<size_t, N-1> newstrides;
-		for (size_t i=0; i<N-1; i++){
-			newshape[i] = this->shape[i+1];
-			newstrides[i] = this->strides[i+1];
-		}
-		
-		// cout << this->shape << endl;
-		// cout << newshape << endl;
-		// cout << "-------\n";
-		// cout << this->strides << endl;
-		// cout << newstrides << endl;
-		// array<size_t, N-1> newshape = subarray(this->shape, 1);
-		// array<size_t, N-1> newstrides = subarray(this->strides, 1);
+		array<size_t, N-1> newshape = subarray<size_t, N-1>(this->shape, 1);
 		int64_t start = idx * this->strides[0];
 
 		return Ndarray<T, N-1>(product(newshape),
 							   start + this->offset,
 							   shared_ptr<T>(this->data, this->data.get()+start),
 							   newshape,
-							   newstrides 
+							   subarray<size_t, N-1>(this->strides, 1)
 							   );
 	}
 };
@@ -223,32 +230,33 @@ public:
 	using NdarrayBase<T,1>::operator= ;
 
 	Ndarray<T,1> operator[](int64_t idx){
-		// cout << "N=1 -> Index: " << idx << endl;
-		if (idx < 0){
-			idx += (this->shape)[0];
-		}
+		idx = this->updateIndex(idx, 0);
 		this->checkIndex(idx, 0);
 		int64_t start = idx * this->strides[0];
 		return Ndarray<T, 1>(1,
 							 start + this->offset,
 							 shared_ptr<T>(this->data, this->data.get()+start),
-							 {1}, {1}
+			                 {1},
+			                 {1}
 							 );
 	}
 
 	const Ndarray<T,1> operator[](int64_t idx) const{
 		return operator[](idx);
-
 	}
 
 	Ndarray<T,1> operator[](Slice<0> slc){
+
 		slc.update(this->shape[0]);
 		this->checkIndex(slc);
+
 		auto newshape = this->shape;
 		auto newstrides = this->strides;
 		int64_t start = slc.start * newstrides[0]; 
+
 		newshape[0] = ceil((slc.stop - slc.start) / static_cast<double>(slc.step));
 		newstrides[0] = newstrides[0] * slc.step;
+
 		return Ndarray<T,1>(1,
 							start + this->offset, 
 							shared_ptr<T>(this->data, (this->data).get()+start),

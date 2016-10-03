@@ -49,8 +49,7 @@ void testSlicing(){
 	sliced2 = array[Slice<>(0,3)];
 	assert (sliced2.shape[0] == 3); // Slicing return wrong shape
 	assert (sliced2.shape[1] == 16); // Slicing return wrong shape
-	// assert (sliced2[0][0] == 0); // Slicing test failed
-	cout << sliced2[0][1] << endl;
+	assert (sliced2[0][0] == 0); // Slicing test failed
 	assert (sliced2[0][7] == 7); // Slicing test failed
 	assert (sliced2[0][15] == 15); // Slicing test failed
 	assert (sliced2[1][0] == 16); // Slicing test failed
@@ -114,10 +113,7 @@ void testIterator(){
 
 	auto tester = [](auto array, vector<int64_t> check){
 		int64_t i = 0;
-		// cout << "shape: " << array.shape << endl;
-		// cout << "strides: " << array.strides << endl;
 		for (auto e: array){
-			// cout << e  << " vs. " << check[i] << endl;
 			assert (e == check[i++]); // Wrong iteration element
 		}
 	};
@@ -155,8 +151,8 @@ void testBroadcasting(){
 
 int main(){
 
-	// testAssignment();
-	// testOutOfBounds();
+	testAssignment();
+	testOutOfBounds();
 	testSlicing();
 	testIterator();
 	testBroadcasting();
