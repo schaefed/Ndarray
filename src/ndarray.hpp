@@ -99,16 +99,6 @@ public:
 			});
 	}
 
-	// template<size_t M>
-	// void operator=(const NdarrayBase<T,M>& other){
-	// 	/*
-	// 	  Asignment is handled here and not in operator[]. This seems to
-	// 	  be an easy way to allow asignments of higher complexity
-	// 	  (i.e. broadcasting)
-	// 	 */
-	// }
-
-
 	void map(function<void(T&)> func){
 		for (auto& e: (*this)){
 			func(e);
@@ -150,24 +140,24 @@ public:
 		return idx;
 	}
 	
-	// template<size_t M>
-	// Ndarray<T, M> broadcastTo(array<size_t, M> shape){
-	// 	static_assert(N < M, "Can only broadcast to higher dimensionality!");
 
-	// 	auto it = strides.end();
-	// 	array<size_t, M> strides;
+	template<size_t M>
+	Ndarray<T, M> broadcastTo(array<size_t, M> newshape){
+		static_assert(N < M, "Can only broadcast to higher dimensionality!");
+		
+	 	array<size_t, M> newstrides = filledArray<size_t, M>(0);
+		
+		auto offset = newshape.size() - shape.size();
 
-	// 	for (int64_t i=M; i>=0; --i){
-	// 		if (this->shape[i] == 1){
-	// 			strides[i] = 0;
-	// 		} else if (shape[i] == this->shape[i]){
-	// 			strides[i] = *(--it);
-	// 		} else {
-	// 			throw DimensionError("Operands could not be braodcast together");
-	// 		}
-	// 	}
-	// 	return Ndarray<T, M>(product(shape), this->offset, this->data, shape, strides);
-	// }
+		for (int64_t i=shape.size()-1; i>=0; --i){
+			if (newshape[i+offset] == shape[i]){
+				newstrides[i+offset] = strides[i];
+			} else if (shape[i] != 1){
+				throw DimensionError("Operands could not be braodcast together");
+			}
+		}
+		return Ndarray<T, M>(product(newshape), this->offset, this->data, newshape, newstrides);
+	}
 };
 
 

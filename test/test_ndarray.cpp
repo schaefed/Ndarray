@@ -126,27 +126,49 @@ void testIterator(){
 		   );
 }
 
-void testBroadcasting(){
-	array<size_t, 2> shape = {8, 8};
-	array<size_t, 2> strides = {0, 1};
-	vector<int64_t> basevec  = range(shape[0]);
-	auto array = ndarray<int64_t, 2>(basevec.data(), shape, strides);
+// void testBroadcasting(){
+// 	array<size_t, 2> shape = {8, 8};
+// 	array<size_t, 2> strides = {0, 1};
+// 	vector<int64_t> basevec  = range(shape[0]);
+// 	auto array = ndarray<int64_t, 2>(basevec.data(), shape, strides);
 
-	for (size_t i=0; i<shape[0]; i++){
-		for (size_t j=0; j<shape[1]; j++){
-			assert (array[i].data.get()[j] == basevec[j]); // broadcasting incorrect
-			assert (array[i][j] == basevec[j]); // broadcasting incorrect
+// 	for (size_t i=0; i<shape[0]; i++){
+// 		for (size_t j=0; j<shape[1]; j++){
+// 			assert (array[i].data.get()[j] == basevec[j]); // broadcasting incorrect
+// 			assert (array[i][j] == basevec[j]); // broadcasting incorrect
+// 		}
+// 	}
+
+// 	// should be moved to testIteration at one point in time...
+// 	size_t idx = 0;
+// 	for (auto e: array){
+// 		idx %= array.shape[0];
+// 		assert(e == basevec[idx]);
+// 		idx++;
+// 	}
+//}
+
+void testBroadcasting(){
+	array<size_t, 1> shape = {8};
+	vector<int64_t> basevec  = range(shape[0]);
+	auto array1 = ndarray<int64_t, 1>(basevec.data(), shape);
+	auto array2 = array1.broadcastTo<2>({8,8});
+
+	for (size_t i=0; i<array2.shape[0]; i++){
+		for (size_t j=0; j<array2.shape[1]; j++){
+			assert (array2[i].data.get()[j] == basevec[j]); // broadcasting incorrect
+			assert (array2[i][j] == basevec[j]); // broadcasting incorrect
 		}
 	}
 
 	// should be moved to testIteration at one point in time...
 	size_t idx = 0;
-	for (auto e: array){
-		idx %= array.shape[0];
+	for (auto e: array2){
+		idx %= array2.shape[0];
 		assert(e == basevec[idx]);
 		idx++;
 	}
-	
+
 }
 
 int main(){
