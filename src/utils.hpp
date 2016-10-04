@@ -172,4 +172,15 @@ vector<T> filterZeros(const array<T, N>& arg) {
 	return out;
 }
 
+template<
+	typename T, size_t N,
+	typename = typename enable_if<is_arithmetic<T>::value, T>::type
+	>
+array<T, N> filledArray(const T value){
+	array<T,N> out;
+	out.fill(value);
+	return out;
+}
+
+
 #endif /* UTILS_H */
