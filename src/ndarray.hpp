@@ -8,6 +8,7 @@
 #include <math.h>
 
 #include "utils.hpp"
+#include "funcs.hpp"
 #include "slice.hpp"
 #include "iterator.hpp"
 #include "exceptions.hpp"
@@ -267,36 +268,5 @@ public:
 	}
 	
 };
-
-template<typename T, size_t N>
-Ndarray<T, N> ndarray(array<size_t, N> shape_, function<void(T*)> destructor_=_deleteArray<T>){
-	auto size = product(shape_);
-	return Ndarray<T,N>(size,
-						0,
-						shared_ptr<T>(new T[size], destructor_),
-						shape_,
-						cumulativeProduct(shape_)
-						);
-}
-
-template<typename T, size_t N>
-Ndarray<T, N> ndarray(T* data_, array<size_t, N> shape_, function<void(T*)> destructor_=_deleteNothing<T>){
-	return Ndarray<T,N>(product(shape_),
-						0,
-						shared_ptr<T>(data_, destructor_),
-						shape_,
-						cumulativeProduct(shape_)
-						);	
-}
-
-template<typename T, size_t N>
-Ndarray<T, N> ndarray(T* data_, array<size_t, N> shape_, array<size_t, N> strides_, function<void(T*)> destructor_=_deleteNothing<T>){
-	return Ndarray<T,N>(product(shape_),
-						0,
-						shared_ptr<T>(data_, destructor_),
-						shape_,
-						strides_
-						);	
-}
 
 #endif /* NDARRAY_H */

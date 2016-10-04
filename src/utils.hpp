@@ -119,33 +119,6 @@ T product(const array<T, N> arg){
 
 template<
 	typename T,
-	typename = typename enable_if<is_arithmetic<T>::value, T>::type
-	>
-vector<T> cumulativeProduct(const vector<T> arg){
-	/* This name is misleading, as the function returns standard strides for a given shape */
-	auto out = vector<T>(arg.size(), 1);
-	for (int64_t i=arg.size()-2; i>=0 ; --i){
-		out[i] = arg[i+1] * out[i+1]; 
-	}
-	return out;
-}
-
-template<
-	typename T, size_t N,
-	typename = typename enable_if<is_arithmetic<T>::value, T>::type
-	>
-array<T, N> cumulativeProduct(const array<T, N> arg){
-	/* This name is misleading, as the function returns standard strides for a given shape */
-	array<T, N> out;
-	out.back() = 1;
-	for (int64_t i=arg.size()-2; i>=0 ; --i){
-		out[i] = arg[i+1] * out[i+1]; 
-	}
-	return out;
-}
-
-template<
-	typename T,
 	typename = typename enable_if<is_integral<T>::value, T>::type
 	>
 vector<T> filterZeros(const vector<T>& arg) {
