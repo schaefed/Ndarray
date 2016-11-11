@@ -13,18 +13,20 @@ void testAssignment(){
 	vector<int64_t> basevec  = range(product<size_t>(shape));
 	auto array = ndarray<int64_t, 2>(basevec.data(), shape);
 
-	array = 21;
-	for (auto e: array){
-		assert(e == 21); // array assignment failed!
-	}
+	// array[eee] = 21;
+	// for (auto e: array){
+	// 	assert(e == 21); // array assignment failed!
+	// }
 	
-	array[Slice<1>(0,-1,2)] = 42;
-	bool tmp = true;
-	for (auto e: array){
-		assert ( e = (tmp) ? 42 : 21); // array assignment failed
-		tmp = not tmp;
-	}
+	// array[Slice<1>(0,-1,2)][eee] = 42;
+	// bool tmp = true;
+	// for (auto e: array){
+	// 	assert ( e = (tmp) ? 42 : 21); // array assignment failed
+	// 	tmp = not tmp;
+	// }
 	
+	array[__] = array[0];
+	//array[__] = array;
 }
 
 void testOutOfBounds(){
@@ -174,10 +176,10 @@ void testBroadcasting(){
 int main(){
 
 	testAssignment();
-	testOutOfBounds();
-	testSlicing();
-	testIterator();
-	testBroadcasting();
+	// testOutOfBounds();
+	// testSlicing();
+	// testIterator();
+	// testBroadcasting();
 
 	return 0;
 }

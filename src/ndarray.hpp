@@ -15,7 +15,12 @@
 
 using namespace std;
 
+Ellipsis eee = Ellipsis();
+Ellipsis __ = Ellipsis();
+
 template<typename T, size_t N> class Ndarray;
+template<typename T, size_t N> class NdarrayBase;
+template<typename T, size_t N> class NdarraySlice;
 
 template<typename T, size_t N> class NdarrayBase {
 		
@@ -89,16 +94,41 @@ public:
 		return *this;
 	}
 		
-	void operator=(const T& other){
-		/*
-		  Asignment is handled here and not in operator[]. This seems to
-		  be an easy way to allow asignments of higher complexity
-		  (i.e. broadcasting)
-		 */
-		map([other](T& e) {
-				e = other;
-			});
-	}
+	// template<size_t M>
+	// void operator=(const NdarrayBase<T, M>& other){
+	// 	/*
+	// 	  Asignment is handled here and not in operator[]. This seems to
+	// 	  be an easy way to allow asignments of higher complexity
+	// 	  (i.e. broadcasting)
+	// 	 */
+	// 	cout << "here\n";
+	// 	auto tmp = other.broadcastTo<N>(shape);
+	// 	// auto begin = other.begin();
+
+	// 	// for (auto& e: *this)
+	// 	// 	e = *(begin++);
+	// 	// }
+		
+	// 	// map([other](T& e) {
+	// 	// 		e = other;
+	// 	// 	});
+	// }
+
+	// NdarrayBase<T,N>& operator=(const T& other){
+	// 	/*
+	// 	  Asignment is handled here and not in operator[]. This seems to
+	// 	  be an easy way to allow asignments of higher complexity
+	// 	  (i.e. broadcasting)
+	// 	 */
+	// 	map([other](T& e) {
+	// 			e = other;
+	// 		});
+	// 	return *this;
+	// }
+
+	// NdarraySlice<T,N> operator[](Ellipsis){
+	// 	return NdarraySlice<T,N>(*this);
+	// }
 
 	void map(function<void(T&)> func){
 		for (auto& e: (*this)){
@@ -141,7 +171,6 @@ public:
 		return idx;
 	}
 	
-
 	template<size_t M>
 	Ndarray<T, M> broadcastTo(array<size_t, M> newshape){
 		static_assert(N < M, "Can only broadcast to higher dimensionality!");
@@ -168,6 +197,10 @@ class Ndarray : public NdarrayBase<T,N> {
 public:
 	using NdarrayBase<T,N>::NdarrayBase ;
 	using NdarrayBase<T,N>::operator= ;
+
+	NdarraySlice<T,N> operator[](Ellipsis){
+		return NdarraySlice<T,N>(*this);
+	}
 
 	template<size_t DIM>
 	Ndarray<T,N> operator[](Slice<DIM> slc){
@@ -210,6 +243,12 @@ public:
 							   subarray<size_t, N-1>(this->strides, 1)
 							   );
 	}
+
+	template<size_t DIM>
+	const Ndarray<T,N> operator[](int64_t slc) const{
+		return operator[](slc);
+	}
+
 };
 
 
@@ -219,6 +258,10 @@ class Ndarray<T,1> : public NdarrayBase<T,1> {
 public:
 	using NdarrayBase<T,1>::NdarrayBase ;
 	using NdarrayBase<T,1>::operator= ;
+
+	NdarraySlice<T,1> operator[](Ellipsis){
+		return NdarraySlice<T,1>(*this);
+	}
 
 	Ndarray<T,1> operator[](int64_t idx){
 		idx = this->updateIndex(idx, 0);
@@ -266,6 +309,81 @@ public:
 		}
 		return this->data.get()[0];
 	}
+	
+};
+
+template<typename T, size_t N> class NdarraySlice {
+	/*
+	  A helper class to allow complex assignments
+	 */
+private:
+	Ndarray<T, N>& obj;
+
+public:
+	NdarraySlice(Ndarray<T,N>& obj_): obj(obj_){}
+
+	Ndarray<T,N>& operator=(const T& other){
+		obj.map([other](T& e) {
+				e = other;
+			});
+		return obj;
+	}
+
+	template<size_t M>
+	Ndarray<T,N>& operator=(NdarraySlice<T, M>& other){
+		/*
+		  Asignment is handled here and not in operator[]. This seems to
+		  be an easy way to allow asignments of higher complexity
+		  (i.e. broadcasting)
+		 */
+		
+		//cout << other.shape << endl;
+		//auto tmp = other.broadcastTo<N>(obj.shape);
+		//other.broadcastTo<N>(obj.shape);
+		// for (auto& e: obj){
+		// 	e = *iter;
+		// 	iter++;
+		// }
+		return obj;
+	}
+
+	template<size_t M>
+	Ndarray<T,N>& operator=(Ndarray<T, M>& other){
+		/*
+		  Asignment is handled here and not in operator[]. This seems to
+		  be an easy way to allow asignments of higher complexity
+		  (i.e. broadcasting)
+		 */
+		
+		//cout << other.shape << endl;
+		//auto tmp = other.broadcastTo<N>(obj.shape);
+		//other.broadcastTo<N>(obj.shape);
+		// for (auto& e: obj){
+		// 	e = *iter;
+		// 	iter++;
+		// }
+		return obj;
+	}
+
+	// template<size_t M>
+	// Ndarray<T,N>& operator=(const NdarraySlice<T, M>& other){
+	// 	/*
+	// 	  Asignment is handled here and not in operator[]. This seems to
+	// 	  be an easy way to allow asignments of higher complexity
+	// 	  (i.e. broadcasting)
+	// 	 */
+	// 	Ndarray<T,M> tmp(other.obj);
+	// 	tmp.broadcastTo<N>(obj.shape);
+	// 	// for (auto& e: obj){
+	// 	// 	e = *iter;
+	// 	// 	iter++;
+	// 	// }
+	// 	return obj;
+	// }
+
+	// operator Ndarray<T,N>(){
+	// 	return obj;
+	// }
 	
 };
 

@@ -3,6 +3,9 @@
 
 using namespace std;
 
+class Ellipsis {
+	
+};
 
 template<size_t D=0>
 class Slice {
