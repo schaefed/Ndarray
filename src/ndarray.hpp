@@ -20,7 +20,6 @@ Ellipsis __ = Ellipsis();
 
 template<typename T, size_t N> class Ndarray;
 template<typename T, size_t N> class NdarrayBase;
-template<typename T, size_t N> class NdarraySlice;
 
 template<typename T, size_t N> class NdarrayBase {
 		
@@ -93,7 +92,26 @@ public:
 		swap(*this, that);
 		return *this;
 	}
-		
+
+	NdarrayBase<T,N>& operator=(const T& other){
+		map([other](T& e) {
+				e = other;
+			});
+		return *this;
+	}
+
+	template<size_t M>
+	NdarrayBase<T,N>& operator=(const Ndarray<T, M>& other){
+		auto tmp = other.broadcastTo(shape);
+		auto this_iter = this->begin();
+		auto tmp_iter = tmp.begin();
+		while ((this_iter++ != this->end()) and (tmp_iter++ != tmp.end())){
+			*this_iter = *tmp_iter;
+		}
+		assert((this_iter == this->end()) and (tmp_iter == tmp.end()));
+		return *this;
+	}
+	
 	void map(function<void(T&)> func){
 		for (auto& e: (*this)){
 			func(e);
@@ -162,8 +180,8 @@ public:
 	using NdarrayBase<T,N>::NdarrayBase ;
 	using NdarrayBase<T,N>::operator= ;
 
-	NdarraySlice<T,N> operator[](Ellipsis){
-		return NdarraySlice<T,N>(*this);
+	Ndarray<T,N> operator[](Ellipsis){
+		return Ndarray<T,N>(*this);
 	}
 
 	template<size_t DIM>
@@ -223,21 +241,9 @@ public:
 	using NdarrayBase<T,1>::NdarrayBase ;
 	using NdarrayBase<T,1>::operator= ;
 
-	NdarraySlice<T,1> operator[](Ellipsis){
-		return NdarraySlice<T,1>(*this);
+	Ndarray<T,1> operator[](Ellipsis){
+		return Ndarray<T,1>(*this);
 	}
-
-	// Ndarray<T,1> operator[](int64_t idx){
-	// 	idx = this->updateIndex(idx, 0);
-	// 	this->checkIndex(idx, 0);
-	// 	int64_t start = idx * this->strides[0];
-	// 	return Ndarray<T, 1>(1,
-	// 						 start + this->offset,
-	// 						 shared_ptr<T>(this->data, this->data.get()+start),
-	// 		                 {1},
-	// 		                 {1}
-	// 						 );
-	// }
 
 	T operator[](int64_t idx){
 		idx = this->updateIndex(idx, 0);
@@ -272,36 +278,6 @@ public:
 
 	const Ndarray<T,1> operator[](Slice<0> slc) const{
 		return operator[](slc);
-	}
-};
-
-template<typename T, size_t N> class NdarraySlice {
-	/*
-	  A helper class to allow complex assignments
-	 */
-private:
-	Ndarray<T, N>& obj;
-
-public:
-	NdarraySlice(Ndarray<T,N>& obj_): obj(obj_){}
-
-	Ndarray<T,N>& operator=(const T& other){
-		obj.map([other](T& e) {
-				e = other;
-			});
-		return obj;
-	}
-
-	template<size_t M>
-	Ndarray<T,N>& operator=(const Ndarray<T, M>& other){
-		auto tmp = other.broadcastTo(obj.shape);
-		auto obj_iter = obj.begin();
-		auto tmp_iter = tmp.begin();
-		while ((obj_iter++ != obj.end()) and (tmp_iter++ != tmp.end())){
-			*obj_iter = *tmp_iter;
-		}
-		// assert((obj_iter == obj.end()) and (tmp_iter == tmp.end()));
-		return obj;
 	}
 };
 
