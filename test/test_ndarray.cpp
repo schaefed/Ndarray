@@ -11,22 +11,27 @@
 void testAssignment(){
 	array<size_t, 2> shape = {16, 16};
 	vector<int64_t> basevec  = range(product<size_t>(shape));
-	auto array = ndarray<int64_t, 2>(basevec.data(), shape);
-
-	// array[eee] = 21;
-	// for (auto e: array){
-	// 	assert(e == 21); // array assignment failed!
-	// }
+	auto array2d = ndarray<int64_t, 2>(basevec.data(), shape);
+	auto array1d = array2d[0];
 	
-	// array[Slice<1>(0,-1,2)][eee] = 42;
-	// bool tmp = true;
-	// for (auto e: array){
-	// 	assert ( e = (tmp) ? 42 : 21); // array assignment failed
-	// 	tmp = not tmp;
-	// }
+	array2d[eee] = 21;
+	for (auto e: array2d){
+		assert(e == 21); // broadcast assignment failed!
+	}
 	
-	array[__] = array[0];
-	//array[__] = array;
+	array2d[Slice<1>(0,-1,2)][eee] = 42;
+	bool tmp = true;
+	for (auto e: array1d){
+		assert ( e = (tmp) ? 42 : 21); // broadcast assignment failed
+		tmp = not tmp;
+	}
+	
+	array2d[__] = array1d;
+	for (size_t i=0; i < array2d.shape[0] ; i++){
+		assert (array2d[i][0] == array1d[0]); // broadcast assignment failed
+		assert (array2d[i][8] == array1d[8]); // broadcast assignment failed
+		assert (array2d[i][15] == array1d[15]); // broadcast assignment failed
+	}
 }
 
 void testOutOfBounds(){
@@ -128,28 +133,6 @@ void testIterator(){
 		   );
 }
 
-// void testBroadcasting(){
-// 	array<size_t, 2> shape = {8, 8};
-// 	array<size_t, 2> strides = {0, 1};
-// 	vector<int64_t> basevec  = range(shape[0]);
-// 	auto array = ndarray<int64_t, 2>(basevec.data(), shape, strides);
-
-// 	for (size_t i=0; i<shape[0]; i++){
-// 		for (size_t j=0; j<shape[1]; j++){
-// 			assert (array[i].data.get()[j] == basevec[j]); // broadcasting incorrect
-// 			assert (array[i][j] == basevec[j]); // broadcasting incorrect
-// 		}
-// 	}
-
-// 	// should be moved to testIteration at one point in time...
-// 	size_t idx = 0;
-// 	for (auto e: array){
-// 		idx %= array.shape[0];
-// 		assert(e == basevec[idx]);
-// 		idx++;
-// 	}
-//}
-
 void testBroadcasting(){
 	array<size_t, 1> shape = {8};
 	vector<int64_t> basevec  = range(shape[0]);
@@ -170,16 +153,15 @@ void testBroadcasting(){
 		assert(e == basevec[idx]);
 		idx++;
 	}
-
 }
 
 int main(){
 
 	testAssignment();
-	// testOutOfBounds();
-	// testSlicing();
-	// testIterator();
-	// testBroadcasting();
+	testOutOfBounds();
+	testSlicing();
+	testIterator();
+	testBroadcasting();
 
 	return 0;
 }
