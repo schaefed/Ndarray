@@ -13,6 +13,9 @@ void testAssignment(){
 	vector<int64_t> basevec  = range(product<size_t>(shape));
 	auto array2d = ndarray<int64_t, 2>(basevec.data(), shape);
 	auto array1d = array2d[0];
+
+	array1d[0] = 3;
+	assert(array1d[0] == 3); // single value assignment failed!
 	
 	array2d[eee] = 21;
 	for (auto e: array2d){

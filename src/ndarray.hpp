@@ -245,7 +245,7 @@ public:
 		return Ndarray<T,1>(*this);
 	}
 
-	T operator[](int64_t idx){
+	T& operator[](int64_t idx){
 		idx = this->updateIndex(idx, 0);
 		this->checkIndex(idx, 0);
 		int64_t start = idx * this->strides[0];
