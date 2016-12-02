@@ -1,7 +1,5 @@
 
 This template library provides a numpy ndarray inspired multi dimensional array class for C++.
-The library tries to bridge the gap between the safety that comes from an an explicitly templated dimensionality
-and the flexibility of being able to change the view on the underlying data. 
 
 # Design
 
@@ -16,10 +14,12 @@ If no pointer is passed to the constructor, an array of the paramterized datatyp
 freed when no other Ndarray objects points into the data.
 
 # Status
-This library is work in progress and only the most basic things are implemented, notably:
-- Data sharing.
-- Subsripting and slicing (including discontinuous) along an axis and/or elements. 
-- Scalar assignment to Ndarrays and elements.
+
+This library is work in progress, the following things are implemented:
+- Data sharing
+- Subsripting and slicing (including discontinuous) along an axis and/or elements 
+- Assignment to Ndarrays and elements
+- Broadcasting
 
 # Future Work
 The most urgent things to implemented are in this order:
