@@ -69,18 +69,18 @@ public:
 		swap(*this, other);
 	}
 
-	iterator begin(){
+	iterator begin() const {
 		return iterator(&data.get()[0], shape, strides);
 	}
-	iterator end(){
+	iterator end() const {
 		auto end = shape[0] * filterZeros(strides)[0];
 		return iterator(&data.get()[end], shape, strides);
 	}
 
-	const_iterator cbegin(){
+	const_iterator cbegin() const {
 		return iterator(&data.get()[0], shape, strides);
 	}
-	const_iterator cend(){
+	const_iterator cend() const {
 		auto end = shape[0] * filterZeros(strides)[0];
 		return iterator(&data.get()[end], shape, strides);
 	}
@@ -111,16 +111,14 @@ public:
 		return (*this);
 	}
 	
-	void map(function<void(T&)> func){
+	void map(const function<void(T&)> func){
 		for (auto& e: (*this)){
 			func(e);
 		}
 	}
 
 	template<size_t M>
-	void map(function<void(T&, const T)> func, const Ndarray<T,M> other){
-		/*
-		 */
+	void map(const function<void(T&, const T)> func, const Ndarray<T,M> other){
 		auto tmp = other.broadcastTo(shape);
 		auto this_iter = this->begin();
 		auto this_end = this->end();
@@ -140,7 +138,7 @@ public:
 		swap(first.strides, second.strides);
 	}
 
-	void checkIndex(int64_t idx, uint64_t dim){
+	void checkIndex(const int64_t idx, const uint64_t dim) const {
 		if (N < 1){
 			throw IndexError("Too many indices!");
 		}
@@ -153,14 +151,14 @@ public:
 	}
 
 	template<size_t DIM>
-	void checkIndex(Slice<DIM> slc){
+	void checkIndex(const Slice<DIM> slc) const {
 		checkIndex(slc.start, DIM);
 		// stop can be larger than the dimension length,
 		// at least numpy handles it that way
 		// checkIndex(slc.stop, DIM);
 	}
 
-	size_t updateIndex(int64_t idx, size_t dim){
+	size_t updateIndex(int64_t idx, const size_t dim) const {
 		if (idx < 0){
 			idx += this->shape[dim];
 		}
@@ -168,7 +166,7 @@ public:
 	}
 	
 	template<size_t M>
-	Ndarray<T, M> broadcastTo(array<size_t, M> newshape) const {
+	Ndarray<T, M> broadcastTo(const array<size_t, M> newshape) const {
 		static_assert(N < M, "Can only broadcast to higher dimensionality!");
 		
 	 	array<size_t, M> newstrides = filledArray<size_t, M>(0);
@@ -194,7 +192,7 @@ public:
 	using NdarrayBase<T,N>::NdarrayBase ;
 	using NdarrayBase<T,N>::operator= ;
 
-	Ndarray<T,N> operator[](Ellipsis){
+	Ndarray<T,N> operator[](const Ellipsis){
 		return Ndarray<T,N>(*this);
 	}
 
@@ -219,7 +217,7 @@ public:
 	}
 
 	template<size_t DIM>
-	const Ndarray<T,N> operator[](Slice<DIM> slc) const{
+	const Ndarray<T,N> operator[](const Slice<DIM> slc) const {
 		return operator[](slc);
 	}
 
@@ -241,7 +239,7 @@ public:
 	}
 
 	template<size_t DIM>
-	const Ndarray<T,N> operator[](int64_t slc) const{
+	const Ndarray<T,N> operator[](const int64_t slc) const {
 		return operator[](slc);
 	}
 
@@ -255,7 +253,7 @@ public:
 	using NdarrayBase<T,1>::NdarrayBase ;
 	using NdarrayBase<T,1>::operator= ;
 
-	Ndarray<T,1> operator[](Ellipsis){
+	Ndarray<T,1> operator[](const Ellipsis){
 		return Ndarray<T,1>(*this);
 	}
 
@@ -266,7 +264,7 @@ public:
 		return this->data.get()[start];
 	}
 
-	const Ndarray<T,1> operator[](int64_t idx) const{
+	const Ndarray<T,1> operator[](const int64_t idx) const{
 		return operator[](idx);
 	}
 
