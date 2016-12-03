@@ -101,7 +101,7 @@ public:
 	}
 
 	template<size_t M>
-	NdarrayBase<T,N>& operator=(const Ndarray<T, M>& other){
+	NdarrayBase<T,N>& operator=(const NdarrayBase<T, M>& other){
 		map(
 			[](T& l, const T r){
 				l = r;
@@ -118,7 +118,7 @@ public:
 	}
 
 	template<size_t M>
-	void map(const function<void(T&, const T)> func, const Ndarray<T,M> other){
+	void map(const function<void(T&, const T)> func, const NdarrayBase<T,M> other){
 		auto tmp = other.broadcastTo(shape);
 		auto this_iter = this->begin();
 		auto this_end = this->end();
