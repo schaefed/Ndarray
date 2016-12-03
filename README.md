@@ -24,4 +24,6 @@ This library is work in progress, the following things are implemented:
 # Future Work
 The most urgent things to implemented are in this order:
 - Basic arithmetic operators.
-
+- A usefull cout function.
+- Parallel map versions.
+- Possibly parallelized math functions.
