@@ -102,20 +102,34 @@ public:
 
 	template<size_t M>
 	NdarrayBase<T,N>& operator=(const Ndarray<T, M>& other){
-		auto tmp = other.broadcastTo(shape);
-		auto this_iter = this->begin();
-		auto tmp_iter = tmp.begin();
-		while ((this_iter++ != this->end()) and (tmp_iter++ != tmp.end())){
-			*this_iter = *tmp_iter;
-		}
-		assert((this_iter == this->end()) and (tmp_iter == tmp.end()));
-		return *this;
+		map(
+			[](T& l, const T r){
+				l = r;
+			},
+			other
+			);
+		return (*this);
 	}
 	
 	void map(function<void(T&)> func){
 		for (auto& e: (*this)){
 			func(e);
 		}
+	}
+
+	template<size_t M>
+	void map(function<void(T&, const T)> func, const Ndarray<T,M> other){
+		/*
+		 */
+		auto tmp = other.broadcastTo(shape);
+		auto this_iter = this->begin();
+		auto this_end = this->end();
+		auto tmp_iter = tmp.begin();
+		auto tmp_end = tmp.end();
+		while ((this_iter++ != this_end) and (tmp_iter++ != tmp_end)){
+			func(*this_iter, *tmp_iter);
+		}
+		assert((this_iter == this_end) and (tmp_iter == tmp_end));
 	}
 	
 	friend void swap(NdarrayBase<T,N>& first, NdarrayBase<T,N>& second){
