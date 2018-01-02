@@ -93,42 +93,29 @@ vector<T> concat(const initializer_list<array<T, N>> args){
 	return out;
 }
 
-template<
-	typename T,
-	typename = typename enable_if<is_arithmetic<T>::value, T>::type
-	>
+template<typename T>
 T product(const vector<T> arg){
-	T out = 1;
-	for (auto x: arg){
-		out *= x;
-	}
-	return out;
+  return std::accumulate(arg.begin(), arg.end(), 1, std::multiplies<T>());
 }
+
+template<typename T, size_t N>
+T product(const array<T, N> arg){
+  return std::accumulate(arg.begin(), arg.end(), 1, std::multiplies<T>());
+}
+
+
 template<
 	typename T, size_t N,
-	typename = typename enable_if<is_arithmetic<T>::value, T>::type
-	>
-T product(const array<T, N> arg){
-	T out = 1;
-	for (auto x: arg){
-		out *= x;
-	}
-	return out;
-}
-
-
-template<
-	typename T,
 	typename = typename enable_if<is_integral<T>::value, T>::type
 	>
 vector<T> filterZeros(const vector<T>& arg) {
 	vector<T> out; // = vector<T>();
-	for (auto e: arg){
-		if (e != 0){
-			out.push_back(e);
-		}
-	}
-	return out;
+  for (auto e: arg){
+  	if (e != 0){
+  		out.push_back(e);
+  	}
+  }
+  return out;
 }
 
 template<
@@ -136,22 +123,19 @@ template<
 	typename = typename enable_if<is_integral<T>::value, T>::type
 	>
 vector<T> filterZeros(const array<T, N>& arg) {
-	vector<T> out; // = vector<T>();
-	for (auto e: arg){
-		if (e != 0){
-			out.push_back(e);
-		}
-	}
-	return out;
+	vector<T> out;
+  for (auto e: arg){
+  	if (e != 0){
+  		out.push_back(e);
+  	}
+  }
+  return out;
 }
 
-template<
-	typename T, size_t N,
-	typename = typename enable_if<is_arithmetic<T>::value, T>::type
-	>
+template<typename T, size_t N>
 array<T, N> filledArray(const T value){
 	array<T,N> out;
-	out.fill(value);
+  std::fill(out.begin(), out.end(), value);
 	return out;
 }
 
