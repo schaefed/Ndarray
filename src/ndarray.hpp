@@ -4,6 +4,7 @@
 #include <iostream>
 #include <array>
 #include <functional>
+#include <algorithm>
 #include <memory>
 #include <math.h>
 
@@ -94,40 +95,15 @@ public:
 	}
 
 	NdarrayBase<T,N>& operator=(const T& other){
-		map([other](T& e) {
-				e = other;
-			});
+    std::fill(this->begin(), this->end(), other);
 		return *this;
 	}
 
 	template<size_t M>
 	NdarrayBase<T,N>& operator=(const NdarrayBase<T, M>& other){
-		map(
-			[](T& l, const T r){
-				l = r;
-			},
-			other
-			);
-		return (*this);
-	}
-	
-	void map(const function<void(T&)> func){
-		for (auto& e: (*this)){
-			func(e);
-		}
-	}
-
-	template<size_t M>
-	void map(const function<void(T&, const T)> func, const NdarrayBase<T,M> other){
 		auto tmp = other.broadcastTo(shape);
-		auto this_iter = this->begin();
-		auto this_end = this->end();
-		auto tmp_iter = tmp.begin();
-		auto tmp_end = tmp.end();
-		while ((this_iter++ != this_end) and (tmp_iter++ != tmp_end)){
-			func(*this_iter, *tmp_iter);
-		}
-		assert((this_iter == this_end) and (tmp_iter == tmp_end));
+    std::copy(tmp.begin(), tmp.end(), this->begin());
+		return (*this);
 	}
 	
 	friend void swap(NdarrayBase<T,N>& first, NdarrayBase<T,N>& second){
