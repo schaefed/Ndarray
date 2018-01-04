@@ -23,14 +23,14 @@ template<typename T, size_t N> class Ndarray;
 template<typename T, size_t N> class NdarrayBase;
 
 template<typename T, size_t N> class NdarrayBase {
-		
+
 private:
 
 public:
-	
+
 	typedef DataIterator<T, N>	iterator;
 	typedef DataIterator<const T, N> const_iterator;
-	
+
 	size_t size;
 	size_t offset;
 	shared_ptr<T> data;
@@ -62,7 +62,7 @@ public:
 		shape(other.shape),
 		strides(other.strides)
 	{}
-	
+
 	NdarrayBase(NdarrayBase<T,N>&& other):
 		/* move constructor */
 		NdarrayBase<T,N>()
@@ -86,17 +86,29 @@ public:
 		return iterator(&data.get()[end], shape, strides);
 	}
 
-	NdarrayBase<T,N>& operator=(NdarrayBase<T,N> that){
-		/* copy asignment operator
-		   obsolete when array value assignment is implemeted
-		 */
-		swap(*this, that);
-		return *this;
-	}
+  //	NdarrayBase<T,N>& operator=(NdarrayBase<T,N> that){
+  //		/* copy asignment operator */
+  //		swap(*this, that);
+  //		return *this;
+  //	}
+
+	//  friend void swap(NdarrayBase<T,N>& first, NdarrayBase<T,N>& second){
+	//  	swap(first.size, second.size);
+	//  	swap(first.offset, second.offset);
+	//  	swap(first.shape, second.shape);
+	//  	swap(first.data, second.data);
+	//  	swap(first.strides, second.strides);
+	//  }
 
 	NdarrayBase<T,N>& operator=(const T& other){
     std::fill(this->begin(), this->end(), other);
 		return *this;
+	}
+
+	NdarrayBase<T,N>& operator=(const NdarrayBase<T, N>& other){
+		auto tmp = other.broadcastTo(shape);
+    std::copy(tmp.begin(), tmp.end(), this->begin());
+		return (*this);
 	}
 
 	template<size_t M>
@@ -104,14 +116,6 @@ public:
 		auto tmp = other.broadcastTo(shape);
     std::copy(tmp.begin(), tmp.end(), this->begin());
 		return (*this);
-	}
-	
-	friend void swap(NdarrayBase<T,N>& first, NdarrayBase<T,N>& second){
-		swap(first.size, second.size);
-		swap(first.offset, second.offset);
-		swap(first.shape, second.shape);
-		swap(first.data, second.data);		
-		swap(first.strides, second.strides);
 	}
 
 	void checkIndex(const int64_t idx, const uint64_t dim) const {
