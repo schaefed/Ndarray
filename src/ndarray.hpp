@@ -140,13 +140,12 @@ public:
 		}
 		return idx;
 	}
-	
+
 	template<size_t M>
 	Ndarray<T, M> broadcastTo(const array<size_t, M> newshape) const {
-		static_assert(N < M, "Can only broadcast to higher dimensionality!");
-		
-	 	array<size_t, M> newstrides = filledArray<size_t, M>(0);
-		
+		static_assert(N <= M, "Can only broadcast to equal or higher dimensionality!");
+
+	 	auto newstrides = filledArray<size_t, M>(0);
 		auto offset = newshape.size() - shape.size();
 
 		for (int64_t i=shape.size()-1; i>=0; --i){
@@ -175,17 +174,17 @@ public:
 	template<size_t DIM>
 	Ndarray<T,N> operator[](Slice<DIM> slc){
 		static_assert(DIM < N, "Invalid index dimension!");
-		
+
 		slc.update(this->shape[DIM]);
 		this->checkIndex(slc);
 
 		auto newshape = this->shape;
 		auto newstrides = this->strides;
-		int64_t start = slc.start * newstrides[DIM]; 
+		auto start = slc.start * newstrides[DIM];
 		newshape[DIM] = ceil((slc.stop - slc.start) / static_cast<double>(slc.step));
 		newstrides[DIM] = newstrides[DIM] * slc.step;
 		return Ndarray<T,N>(product(newshape),
-							start + this->offset, 
+							start + this->offset,
 							shared_ptr<T>(this->data, (this->data).get()+start),
 							newshape,
 							newstrides // is start+data accesibly from the smart pointer?
@@ -197,14 +196,14 @@ public:
 		return operator[](slc);
 	}
 
-	
+
 	Ndarray<T,N-1> operator[](int64_t idx){
 
 		idx = this->updateIndex(idx, 0);
 		this->checkIndex(idx, 0);
-		
-		array<size_t, N-1> newshape = subarray<size_t, N-1>(this->shape, 1);
-		int64_t start = idx * this->strides[0];
+
+		auto newshape = subarray<size_t, N-1>(this->shape, 1);
+		auto start = idx * this->strides[0];
 
 		return Ndarray<T, N-1>(product(newshape),
 							   start + this->offset,
@@ -236,7 +235,7 @@ public:
 	T& operator[](int64_t idx){
 		idx = this->updateIndex(idx, 0);
 		this->checkIndex(idx, 0);
-		int64_t start = idx * this->strides[0];
+		auto start = idx * this->strides[0];
 		return this->data.get()[start];
 	}
 
@@ -251,13 +250,13 @@ public:
 
 		auto newshape = this->shape;
 		auto newstrides = this->strides;
-		int64_t start = slc.start * newstrides[0]; 
+		auto start = slc.start * newstrides[0];
 
 		newshape[0] = ceil((slc.stop - slc.start) / static_cast<double>(slc.step));
 		newstrides[0] = newstrides[0] * slc.step;
 
 		return Ndarray<T,1>(1,
-							start + this->offset, 
+							start + this->offset,
 							shared_ptr<T>(this->data, (this->data).get()+start),
 							newshape,
 							newstrides // is start+data accesibly from the smart pointer?
